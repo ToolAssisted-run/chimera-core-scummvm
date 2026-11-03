@@ -61,13 +61,19 @@ ScummVM's make and lists what to link), ScummVM's data files as one zip
 
 ## The tests
 
-- `waterbox/run-gate.sh -m <mb> [-g <folder of freeware games>]`: builds
-  both, then the core's tests: native against sandbox, savestates, the
-  clock, the input, the sound, the refusals. Each test says what it
-  compared. The games' tests SKIP, saying so, without `-g` (or
-  `SCUMMVM_GAMES`); `tests/fetch-freeware.sh <folder>` downloads them.
-- `tests/run-frontend.sh --chimera-root <chimera>`: the package through
-  `chimera-run` and through Chimera's window.
+- `waterbox/run-gate.sh -m <mb> [-g <freeware games>] [-r <ROMs>] [-o <owner's games>]`:
+  builds both, then the core's tests: native against sandbox, savestates,
+  the clock, the input, the sound, save data, the refusals, the texts.
+  Each test says what it compared. Without `-g` (or `SCUMMVM_GAMES`) the
+  freeware games' tests say SKIP; `tests/fetch-freeware.sh <folder>`
+  downloads them. `-r` (or `SCUMMVM_ROMS`) is a folder with the MT-32's
+  `MT32_CONTROL.ROM` and `MT32_PCM.ROM`; `-o` (or `SCUMMVM_OWNER_GAMES`)
+  a folder with games that may not be distributed (`kq2.zip`). Set
+  `CHIMERA_ROOT` for the text keys check (Chimera's
+  tools/check-core-texts.py). About 10 minutes once built.
+- `tests/run-frontend.sh --chimera-root <chimera> [--package <file>]`: the
+  package through `chimera-run` and through Chimera's window (headless).
+  The window needs Qt's libraries: `QT_LIB_DIR=<Qt>/gcc_64/lib`.
 - Chimera's contract tests, against the package's folder:
 
       CHIMERA_CORES_DIR=<folder> <chimera>/build/meson-linux/source/ui/test-packages
@@ -82,3 +88,24 @@ without spaces (`MouseLeftButton`, `KeyEscape`) and the mouse's place
 
 ScummVM's log goes to the error output: run-native shows it, and in
 Chimera it is the core's log.
+
+## Changing the texts
+
+Every text a person reads is a key (docs/PLAN.md). The keys of the
+declarations are written by `gen-config.py` into `languages/en.json`; the
+keys the code names are added to it by hand. `write-languages.py` then
+writes the other 25 tables from its own translations, and stops on a key
+it has no translation for. `tests/check-names.py` checks that names are
+written as they are.
+
+## Troubleshooting
+
+- The guest link fails on `__memcpy_chk` or `__isoc23_strtol`: the guest
+  build of ScummVM was compiled against the computer's C library. Its
+  configure must be a cross build (`--host=x86_64-linux-musl`, which
+  guest.mk passes); `build/guest/scummvm/config.mk` must name the guest
+  compiler (`CXX := g++ -specs ...`). Delete `build/guest/scummvm` and build
+  again.
+- check-wbx takes about four minutes: it reads the whole 223 MB core.
+- A change to the core's C++ is compiled by ScummVM's own make; the link
+  follows `build/<build>/scummvm/link.stamp`.

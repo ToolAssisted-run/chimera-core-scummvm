@@ -14,13 +14,16 @@ Local only: this repository has no remote yet, and nothing is published.
 
 - ScummVM at commit a60993f5 (2026-11-03), with every engine ScummVM builds
   by default (and its test engine) except two that draw only through OpenGL
-  (The Colony and Return to Monkey Island), which come later through
-  Chimera's GPU bridge.
-- Tried: ScummVM's test engine (testbed) and scummvm.org's freeware games
+  (The Colony and Thimbleweed Park): how they will draw is open
+  (docs/PLAN.md).
+- Tried: ScummVM's test engine (testbed), scummvm.org's freeware games
   Beneath a Steel Sky, Flight of the Amazon Queen, Lure of the Temptress,
-  Drascula and DreamWeb. The sandboxed core and a plain native build agree
-  on every picture and the sound; savestates land where the straight run
-  does. See [docs/PLAN.md](docs/PLAN.md) for what was measured and what was
+  Drascula and DreamWeb, and King's Quest II. The sandboxed core and a
+  plain native build agree on every picture and the sound; savestates land
+  where the straight run does. Each was played for its first minute or so:
+  no game has been played through.
+- Not tried: Windows; CD games with speech; games with video; the 3D
+  engines. See [docs/PLAN.md](docs/PLAN.md) for what was measured and what was
   not tried.
 
 ## What you bring

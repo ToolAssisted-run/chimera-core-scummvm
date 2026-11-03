@@ -21,7 +21,7 @@ collideMove when leaving fast area").
   keeps, and the 3D engines (Grim, Myst 3, The Longest Journey, Freescape,
   Hpl1, Tetraedge, Wintermute 3D, Alcachofa) have TinyGL, a software
   renderer, as one of their renderers. Two engines draw only through
-  OpenGL: colony (The Colony) and twp (Return to Monkey Island).
+  OpenGL: colony (The Colony) and twp (Thimbleweed Park).
 - **What the user brings:** the game's files. No firmware is needed except
   the Roland MT-32 or CM-32L ROMs, for the games that can play their music
   on those (optional, by a setting).
@@ -188,9 +188,9 @@ What it found while it was being written, each fixed:
 - testbed's VerifyErrorMessages test failed: a save file that is not there
   must set ScummVM's error, as its default save manager does.
 
-Measured on an Intel Core Ultra 7 265KF, 2026-11-03: 37 passed, 0 failed,
-0 skipped (with the freeware games and the owner's MT-32 ROMs; without
-them their tests say SKIP).
+Measured on an Intel Core Ultra 7 265KF, 2026-11-03: 39 passed, 0 failed,
+0 skipped (with the freeware games, the owner's MT-32 ROMs and the owner's
+King's Quest II; without them their tests say SKIP).
 
 - native = sandbox: testbed's pixel formats (1600 frames, every picture,
   the sound, the lag, testbed's reports), its save file and file tests;
@@ -262,3 +262,52 @@ Speed (Intel Core Ultra 7 265KF): Beneath a Steel Sky, 6000 frames in
 (about 1100 a second, start included); the sandboxed run takes 455 MB of
 the computer's memory (core.wbx is 223 MB, 81 MB of it ScummVM's data
 files). The package is 120 MB.
+
+## A game of the owner's, and the heap (2026-11-03)
+
+- **King's Quest II** (AGI), the owner's copy: its two floppy images'
+  files, extracted and zipped (kept outside the repository, in the owner's
+  test content folder): ScummVM finds "King's Quest II: Romancing the
+  Throne (2.2 1987-05-07 5.25"/3.5"/DOS/English)" first of two. Through
+  the intro, Enter five times, a word typed: the parser answers ("I don't
+  understand"), the first letter typed went to closing a message. Native
+  = sandbox over 3600 frames. Gate test kq2 (SKIP without the folder: the
+  game may not be distributed).
+- **The Heap bus**, read through chimera-run (`--ram-search-bench Heap`,
+  testbed after 600 frames): one live range, 2.5 MB of the 512 MB arena;
+  a search of it in runs (ReadBus) takes 0.4 s to start, against 35 s a
+  byte a call; every candidate reads what PeekBus reads.
+
+## Not tried yet (2026-11-03)
+
+- **Windows.** Neither the frontend test's scenario on the Windows build
+  nor anything else on Windows has been run.
+- **A full game played through**, a CD game with speech (Beneath a Steel
+  Sky's CD version, Flight of the Amazon Queen's talkie), a game with
+  video (Broken Sword, Toonstruck), the high-resolution and 16/32-bit
+  engines on real games, the 3D engines' TinyGL renderer, any game of
+  over 2 GB in a zip, and a zip whose names are not UTF-8 or ASCII.
+- **CI.** `.github/workflows/chimera.yml` is written (copied from the
+  OpenBOR core's, with the freeware games fetched) and has never run: the
+  repository has no remote.
+- **ScummVM's per-game options** (an engine's own checkboxes, such as
+  testbed's "interactive mode" or SCUMM's enhancements) are not offered:
+  they could become each game's own settings (GetGameSettings and
+  SuggestSettings), a later step.
+
+## Open, for the owner (2026-11-03)
+
+- **The Colony and Thimbleweed Park** (the engines left out; "twp" is
+  Thimbleweed Park, not Return to Monkey Island, which ScummVM does not
+  run). Neither has a software renderer: Colony has two OpenGL renderers,
+  Thimbleweed Park calls OpenGL itself. The owner chose the GPU bridge;
+  asked again because Chimera's rule is that a GPU renderer is never the
+  only one, and because Thimbleweed Park keeps its textures only on the
+  card (a state loaded in another session would come back without them).
+  The alternative put: Mesa's softpipe built into the core first
+  (deterministic, savestates whole), the bridge after it as a hardware
+  renderer.
+- **The libraries' versions.** libretro-deps holds old releases (zlib
+  1.2.8, libpng 1.6.25 beta, FreeType 2.x of its time); moving each to its
+  current release is possible and not done.
+- **Publishing**: a repository, CI, the roster, the README's row.

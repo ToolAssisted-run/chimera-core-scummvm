@@ -39,6 +39,8 @@
 #   savedata:import   a project's save data zip is in the machine from frame 0
 #   <game>            each freeware game, from power-on through its intro with
 #                     keys and clicks: native = sandbox
+#   kq2               King's Quest II (the owner's): the intro, Enter, a word
+#                     typed: native = sandbox, and the typing changes the game
 #   mt32              Lure of the Temptress's music on the MT-32 emulation:
 #                     native = sandbox, and it is heard
 #   refusals          no game, not a zip, a zip of no game, a member
@@ -47,18 +49,20 @@
 #   texts             the language tables: every key the code names is there,
 #                     every name is written as it is
 #
-# usage: run-gate.sh -m <miniBox checkout> [-g <freeware games>] [-r <ROMs>]
+# usage: run-gate.sh -m <miniBox checkout> [-g <freeware games>] [-r <ROMs>] [-o <owner's games>]
 set -u
 here="$(cd "$(dirname "$0")" && pwd)"
 root="$(cd "$here/.." && pwd)"
 mb="${MINIBOX_DIR:-}"
 games="${SCUMMVM_GAMES:-}"
 roms="${SCUMMVM_ROMS:-}"
-while getopts "m:g:r:" opt; do
+owner="${SCUMMVM_OWNER_GAMES:-}"
+while getopts "m:g:r:o:" opt; do
 	case "$opt" in
 		m) mb="$OPTARG" ;;
 		g) games="$OPTARG" ;;
 		r) roms="$OPTARG" ;;
+		o) owner="$OPTARG" ;;
 		*) exit 2 ;;
 	esac
 done
@@ -314,6 +318,18 @@ fi
 freeware lure lure-1.1.zip 2400 "the intro with its music (from frame 1832), then Escape" --press 2200:KeyEscape:2
 freeware drascula drascula-1.0.zip 1200 "ScummVM's CD audio message, OK clicked" $(click 600 66 159)
 freeware dreamweb dreamweb-uk-1.1.zip 2400 "the intro, then Escape" --press 1800:KeyEscape:2
+
+if [ -n "$owner" ] && [ -f "$owner/kq2.zip" ]; then
+	mkwork kq2 "$owner/kq2.zip"
+	enters=(--press 1900:KeyEnter:2 --press 2200:KeyEnter:2 --press 2500:KeyEnter:2 --press 2800:KeyEnter:2 --press 3100:KeyEnter:2)
+	typed=(--press 3400:KeyL:2 --press 3410:KeyO:2 --press 3420:KeyO:2 --press 3430:KeyK:2 --press 3440:KeyEnter:2)
+	both kq2 kq2 3600 "${enters[@]}" "${typed[@]}"
+	same kq2 "$work/kq2.n.txt" "$work/kq2.w.txt" "King's Quest II, 3600 frames: the intro, Enter five times, a word typed and Enter: native = sandbox"
+	"$native" "$work/kq2" --frames 3600 "${enters[@]}" > "$work/kq2-quiet.txt" 2> /dev/null
+	differ input:typing "$work/kq2-quiet.txt" "$work/kq2.n.txt" "the typed word reaches King's Quest II's parser (the run without it is another)"
+else
+	skip "kq2: needs kq2.zip, King's Quest II's files, in a folder given with -o (the owner's game; not distributable)"
+fi
 
 if zip="$(game_zip lure-1.1.zip)" && [ -n "$roms" ] && [ -f "$roms/MT32_CONTROL.ROM" ] && [ -f "$roms/MT32_PCM.ROM" ]; then
 	mkwork mt32 "$zip" '{"musicDriver":"mt32"}'
