@@ -22,8 +22,10 @@
 #
 # Usage: tests/run-frontend.sh --chimera-root <chimera checkout> [-m <miniBox dir>] [--package <scummvm.chimeraCore>]
 # Needs: the native reference built (make -f waterbox/native.mk), and
-# Chimera built (its window and chimera-run). --package tests a package
-# already built instead of building one. Chimera's window finds Qt through
+# Chimera built (its window and chimera-run). It plays ScummVM's test
+# engines, so the package is the test package: --package tests one already
+# built (build-package.sh -t), else one is made. The published package,
+# which has no test engines, is tests/check-release.sh's. Chimera's window finds Qt through
 # QT_LIB_DIR (Qt's lib folder) when its libraries are not where it looks.
 set -u
 
@@ -71,7 +73,7 @@ printf "%-22s %-6s %s\n" "-----" "------" "------"
 # ---------------------------------------------------------------- the package
 if [ -n "$given_pkg" ] && mkdir -p "$work/pkg" && cp "$given_pkg" "$work/pkg/scummvm.chimeraCore"; then
 	report "package" PASS "given: $given_pkg ($(sha1sum "$given_pkg" | cut -c1-40))"
-elif bash "$wb/build-package.sh" -m "$mb" -o "$work/pkg" > "$work/package.log" 2>&1; then
+elif bash "$wb/build-package.sh" -t -m "$mb" -o "$work/pkg" > "$work/package.log" 2>&1; then
 	report "package" PASS "$(grep 'package sha1' "$work/package.log")"
 else
 	report "package" FAIL "see build/frontend/package.log"; echo; echo "$ok ok, $failed failed"; exit 1

@@ -6,17 +6,27 @@
 # adapter. It carries no game: a project brings the game as a zip of its
 # folder. ScummVM's own data files are built into core.wbx.
 #
-# Usage: ./build-package.sh [-m <miniBox dir>] [-r <chimera root>] [-o <out dir>]
+# Two packages are made from the same sources. The published one (the
+# default) leaves out ScummVM's two test engines, testbed and Playground 3D
+# (built by guest.mk TEST_ENGINES=no, in build/guest-release). The test
+# package (-t) has them: the tests and the frontend tests play them. Its
+# version ends in "tests", and build.json says which package it is.
+#
+# Usage: ./build-package.sh [-t] [-m <miniBox dir>] [-r <chimera root>] [-o <out dir>]
+#   -t makes the test package.
 #   -r installs the package into <chimera root>/build/Cores (what CI's publish
-#      job does); -o writes it to <out dir> instead. Neither: build/package.
+#      job does); -o writes it to <out dir> instead. Neither: build/package
+#      (the published one) or build/package-tests (-t).
 set -eu
 here="$(cd "$(dirname "$0")" && pwd)"
 root="$(cd "$here/.." && pwd)"
 mb="${MINIBOX_DIR:-}"
 chimera_root=""
 out=""
-while getopts "m:r:o:" opt; do
+tests=no
+while getopts "tm:r:o:" opt; do
 	case "$opt" in
+		t) tests=yes ;;
 		m) mb="$OPTARG" ;;
 		r) chimera_root="$OPTARG" ;;
 		o) out="$OPTARG" ;;
@@ -33,18 +43,26 @@ fi
 [ -n "$mb" ] || { echo "give miniBox: -m <path>, MINIBOX_DIR, or -r <chimera root>" >&2; exit 1; }
 [ -d "$mb" ] || { echo "miniBox not found at $mb; pass -m <path> or set MINIBOX_DIR" >&2; exit 1; }
 mb="$(cd "$mb" && pwd)"
-[ -n "$out" ] || out="$root/build/package"
+if [ "$tests" = yes ]; then
+	variant=tests
+	guest="$root/build/guest"
+	[ -n "$out" ] || out="$root/build/package-tests"
+else
+	variant=release
+	guest="$root/build/guest-release"
+	[ -n "$out" ] || out="$root/build/package"
+fi
 
 # the guest (guest.mk runs check-wbx before it calls core.wbx built)
 mkdir -p "$root/build"
-make -C "$here" -f guest.mk MB="$mb" -j"${JOBS:-4}" > "$root/build/package-make.log" 2>&1 || {
-	tail -20 "$root/build/package-make.log" >&2; echo "the guest build failed (build/package-make.log)" >&2; exit 1; }
-sh "$mb/source/guest/check-wbx.sh" "$root/build/guest/core.wbx"
+make -C "$here" -f guest.mk MB="$mb" TEST_ENGINES="$tests" -j"${JOBS:-4}" > "$root/build/package-make-$variant.log" 2>&1 || {
+	tail -20 "$root/build/package-make-$variant.log" >&2; echo "the guest build failed (build/package-make-$variant.log)" >&2; exit 1; }
+sh "$mb/source/guest/check-wbx.sh" "$guest/core.wbx"
 
-staging="$root/build/package-staging"
+staging="$root/build/package-staging-$variant"
 rm -rf "$staging"
 mkdir -p "$staging"
-cp "$root/build/guest/core.wbx" "$staging/core.wbx"
+cp "$guest/core.wbx" "$staging/core.wbx"
 cp "$here/waterbox.config" "$staging/waterbox.config"
 cp "$here/default_keybinds.json" "$staging/default_keybinds.json"
 # The core-declared file form for the project wizard - the frontend renders it,
@@ -68,6 +86,10 @@ if [ -z "$core_version" ]; then
 	else
 		core_version="unversioned+local"
 	fi
+fi
+# the test package says so in its version
+if [ "$variant" = tests ]; then
+	case "$core_version" in *+*) core_version="$core_version.tests" ;; *) core_version="$core_version+tests" ;; esac
 fi
 # When that commit was made, beside it (chimera issue #67): the COMMIT's date, in
 # UTC, and never the build's - the same commit must still make the same package.
@@ -108,6 +130,7 @@ if not (("://" in origin and not origin.startswith("file://")) or origin.startsw
     origin = ""
 json.dump({
     "version": "$core_version",
+    "variant": "$variant",
     "source": {"commit": git("rev-parse", "HEAD"),
                "origin": origin,
                "dirty": "-dirty" in "$core_version"},

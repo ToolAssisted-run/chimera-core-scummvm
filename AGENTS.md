@@ -10,9 +10,13 @@ this repository's `docs/PLAN.md` first.
 - `extern/scummvm` - ScummVM, a submodule at a pinned commit. The build
   applies `patches/` to it in place (`waterbox/apply-patches.sh`, which
   checks the whole series) and never writes anything else into it.
-- `extern/libretro-deps` - the libraries' sources (zlib, libpng, libjpeg,
-  FreeType, FriBidi, libogg, libvorbis, libFLAC, libmad, FAAD2, libtheora,
-  libmpeg2, giflib), a submodule at the commit ScummVM's libretro port pins.
+- The libraries' sources (zlib, libpng, libjpeg-turbo, FreeType, FriBidi,
+  libogg, libvorbis, libFLAC, libmad, FAAD2, libtheora, libmpeg2, giflib):
+  each one's upstream release tarball, pinned by SHA-256 in
+  `waterbox/deps.lock`, fetched and unpacked into `build/src` by
+  `waterbox/fetch-deps.sh` (the builds run it). What their own build
+  systems would generate is in `waterbox/deps-config/`; their licences in
+  `waterbox/licenses/`.
 - `patches/` - numbered patches to ScummVM (0001: no launcher, no error box;
   0002: the null backend may have OpenGL when it brings its own).
 - Mesa 24.0.9 (`waterbox/setup-mesa.sh`, into `build/mesa`): the OpenGL the
@@ -56,9 +60,11 @@ this repository's `docs/PLAN.md` first.
     run make -C waterbox -f guest.mk -j4 MB=$mb        # core.wbx (the same; check-wbx takes 4 minutes more)
     tests/fetch-freeware.sh <folder>                   # the freeware games the tests play
     CHIMERA_ROOT=<chimera> waterbox/run-gate.sh -m $mb -g <folder> [-r <MT-32 ROMs>]
-    waterbox/build-package.sh -m $mb [-o <folder>]     # the package
+    waterbox/build-package.sh -m $mb [-o <folder>]     # the published package (no test engines)
+    waterbox/build-package.sh -t -m $mb                # the test package (testbed, Playground 3D)
     QT_LIB_DIR=<Qt lib> tests/run-frontend.sh --chimera-root <chimera> [--package <file>]
     CHIMERA_CORES_DIR=<folder> <chimera>/build/meson-linux/source/ui/test-packages <folder>
+    tests/check-release.sh --chimera-root <chimera> --package build/package/scummvm.chimeraCore -g <folder>
 
 ## Rules
 
@@ -70,6 +76,13 @@ this repository's `docs/PLAN.md` first.
   the sandbox's own math functions (`make-native-libm.sh`).
 - A change to the controls is a change to `gen-config.py`; run it, and
   `write-languages.py` after any text changes (every key in 26 languages).
+- Two packages from one source: the published one has no test engines
+  (`TEST_ENGINES=no`, `build/guest-release`); the tests use the test package
+  (`build/guest`). A test that needs testbed or Playground 3D runs on the
+  test package; the published one is checked by `tests/check-release.sh`.
+- A new library release is a line in `deps.lock` (version, tarball,
+  SHA-256), its `deps-config/` files checked against the release's own
+  templates, and its licence copied into `waterbox/licenses/`.
 - A 3D engine draws on the core's own OpenGL (Mesa, the same in both
   builds), never on a graphics card: the picture and everything OpenGL holds
   are machine memory, in every savestate.

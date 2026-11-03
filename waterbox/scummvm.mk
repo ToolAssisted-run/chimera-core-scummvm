@@ -12,6 +12,7 @@
 #
 # Engines: ScummVM's default set, plus its two test engines, which the
 # tests run: testbed and playground3d (3D drawing, through each renderer).
+# The published package's build (TEST_ENGINES=no) leaves those two out.
 #
 # OpenGL: desktop OpenGL through GLAD (patch 0002), which the core answers
 # with the Mesa it links (setup-mesa.sh, backend/chimera-gl.cpp). With it
@@ -21,7 +22,8 @@
 SVM_SRC := $(ROOT)/extern/scummvm
 SVM     := $(B)/scummvm
 
-SVM_ENGINES := --enable-engine=testbed,playground3d
+comma := ,
+SVM_ENGINES := $(if $(filter no,$(TEST_ENGINES)),--disable-engine=testbed$(comma)playground3d,--enable-engine=testbed$(comma)playground3d)
 
 # The guest build is a cross build (guest.mk sets SVM_HOST): configure must
 # not try to run what the guest compiler makes, which only runs in the

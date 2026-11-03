@@ -55,7 +55,15 @@ collideMove when leaving fast area").
    the bridge as a later project.
 3. **A game is given as a zip of its folder.**
 4. **The repository stays local** (no remote, nothing public) until the
-   owner says.
+   owner says. Asked again with the core done, the same: not yet.
+5. **The libraries move to their current upstream releases** (zlib, libpng
+   and every other one taken from libretro-deps' old copies), each pinned
+   by version and the SHA-256 of its tarball (or by commit), with their
+   licences in waterbox/licenses, and every test run again.
+6. **The published package leaves out ScummVM's two test engines**
+   (testbed and Playground 3D); the tests build and use a package with
+   them. The build says plainly which is which, and the release package
+   passes Chimera's package tests and a chimera-run check too.
 
 ## The shape
 
@@ -73,14 +81,14 @@ collideMove when leaving fast area").
   compiler does not work and silently takes the computer's own (the first
   guest build was made that way and failed to link on glibc's
   `__memcpy_chk`; found 2026-11-03).
-- **The libraries** (zlib, libpng, libjpeg-turbo's C, FreeType, FriBidi,
+- **The libraries** (zlib, libpng, libjpeg-turbo, FreeType, FriBidi,
   libogg, libvorbis, libFLAC, libmad, FAAD2, libtheora, libmpeg2, giflib)
-  are built from the submodule extern/libretro-deps at the commit ScummVM's
-  own libretro port pins (bab7d258), with the file lists that port uses
-  (waterbox/deps.mk). Plain C, no assembly, nothing that asks the processor
-  what it can do. These are old versions (zlib 1.2.8, libpng 1.6.25):
-  moving to current releases of each is a possible later step, for the
-  owner.
+  are each its current upstream release, pinned by the SHA-256 of its
+  tarball (waterbox/deps.lock), and compiled by waterbox/deps.mk from the
+  file lists each one's own build uses: plain C, no assembly, no
+  intrinsics, nothing that asks the processor what it can do. They were
+  first the old copies in libretro-deps; see "The libraries at their
+  current releases" below.
 - **The backend** (waterbox/backend/) is an OSystem, as every ScummVM port
   has: chimera-machine.cpp says how it works (the stack, the clock, the
   timers, the sound, the input, the files). The picture: chimera-graphics.h.
@@ -436,6 +444,116 @@ slow softpipe is for a real game, which nobody has measured: Playground
 3D's scenes run at about 100 frames a second in the sandbox at 640x480,
 and no 3D game has been tried.
 
+## The libraries at their current releases (user-decided, 2026-11-03)
+
+The libraries came first from libretro-deps (bab7d258), the copies
+ScummVM's libretro port builds: zlib 1.2.8, a libpng 1.6.25 beta, FreeType
+2.7.0, FAAD2 2.7 and others years old. The owner chose their current upstream
+releases. The submodule is gone; instead:
+
+- **waterbox/deps.lock** names each release, its tarball's address (more
+  than one where the first may go away) and the tarball's SHA-256;
+  **fetch-deps.sh** downloads each once (into build/deps, or a folder
+  given with CHIMERA_DEPS_DIR), refuses one that is not the pinned tarball,
+  and unpacks it into build/src. deps.mk runs it before anything else.
+- **No library's own build system runs** (CMake, Meson, configure): what
+  each would generate is in waterbox/deps-config/, written once by hand for
+  x86-64 Linux, where glibc and musl give the same answers, with a note in
+  each file of the template it fills. A new release is checked against its
+  templates again.
+- **Their licences** are copied from the same tarballs into
+  waterbox/licenses, and package-licenses.json names each by version and
+  tarball.
+
+The releases (2026-11-03):
+
+| library | before | now |
+|---|---|---|
+| zlib | 1.2.8 | 1.3.2 (its SHA-256 checked against zlib.net's) |
+| libpng | 1.6.25 beta 3 | 1.6.59 |
+| libjpeg-turbo | not stated in the copy; API 8 | 3.2.1, API 8 |
+| FreeType | 2.7.0 | 2.15.0 |
+| FriBidi | 1.0.13 | 1.0.18 |
+| libogg | not stated in the copy | 1.3.6 |
+| libvorbis | 1.3.5 | 1.3.7 (its newest, from 2020) |
+| libFLAC | not stated in the copy | 1.5.0 |
+| libmad | 0.15.1b | 0.16.5 (see below) |
+| FAAD2 | 2.7 | 2.11.4 |
+| libtheora | not stated in the copy | 1.2.0 |
+| libmpeg2 | 0.5.1 | 0.5.1 (see below) |
+| giflib | 5.2.2 | 6.1.3 |
+
+What each needed:
+
+- **libjpeg-turbo 3** compiles most of its sources three times, for 8, 12
+  and 16 bits a sample, through small wrapper files (src/wrapper), as its
+  CMake does; the 8-bit API ScummVM uses calls into the others. No SIMD:
+  jconfig.h leaves WITH_SIMD undefined, as libjpeg-turbo's own non-SIMD
+  build does.
+- **FreeType 2.15** is built as its docs/INSTALL.ANY says: the base and one
+  amalgamated file a module, every module its default ftmodule.h lists
+  (new since the old copy: hvf, sdf, svg), compressed fonts through the
+  core's zlib (FT_CONFIG_OPTION_SYSTEM_ZLIB) rather than its own copy.
+- **libmad**: Underbit's last release, 0.15.1b, is from 2004 and its site
+  is gone. Tenacity's continuation (codeberg.org/tenacityteam/libmad) is
+  where it is maintained now, and its 0.16.5 (2026-10-11) is the release
+  used. Its CMake chooses 64-bit fixed-point C on x86-64 (FPM_64BIT); the
+  old build used FPM_INTEL, integer multiplies in inline assembly. Both
+  are integer arithmetic, the same on every computer.
+- **libmpeg2 0.5.1** (2008) is still its last release. Its own site no
+  longer has the tarball; the one used is VideoLAN's mirror of it, whose
+  SHA-256 is the one Debian's archive has for the same file. Its config.h
+  now names no architecture, so its MMX code is not compiled at all (the
+  old copy's config.h named x86, and the MMX files were built and never
+  chosen).
+- **giflib 6**: ScummVM's use of it (DGifOpen, DGifSlurp, DGifCloseFile
+  with an error pointer) is unchanged from giflib 5.1.
+- **FAAD2 2.11** is built as its CMake's floating-point "faad" library:
+  every file in libfaad/, dynamic range control on.
+- The two stand-ins for libretro's headers (retro_inline.h,
+  retro_miscellaneous.h) are gone.
+
+Tested with the new libraries (2026-11-03): run-gate.sh 52 passed, 0
+failed, 0 skipped (with the freeware games, the owner's MT-32 ROMs and King's
+Quest II), every test as before; the frontend tests 6 of 6 on the test
+package; Chimera's contract tests pass on both packages; check-release.sh 4
+of 4 on the published one. The states are a little smaller (testbed's 4.1
+MB, from 4.7; Beneath a Steel Sky's 4.8 MB; OpenGL with shaders' 22.6 MB,
+from 22.9). Which library each test's game reaches was not measured. From
+ScummVM's code: saved games are compressed with zlib (testbed's save tests
+write some), and the decoders for MP3, AAC, FLAC, Ogg Vorbis, Theora,
+MPEG-2, JPEG, PNG and GIF run only for games that have such files. None of
+the tests' games was checked for those.
+
+## The published package and the test package (user-decided, 2026-11-03)
+
+ScummVM's two test engines, testbed and Playground 3D, are what the tests
+play; a user has no use for them. The published package leaves them out
+and the tests build and use a package with them:
+
+- `make -f guest.mk TEST_ENGINES=no` configures ScummVM with
+  `--disable-engine=testbed,playground3d`, in its own folder
+  (build/guest-release); without it, build/guest has them, as the native
+  reference always does.
+- `build-package.sh` makes the published package (build/package);
+  `build-package.sh -t` the test package (build/package-tests), whose
+  version ends in "tests". Each package's build.json says
+  `"variant": "release"` or `"tests"`. The sources, settings and texts are
+  the same.
+- run-gate.sh and run-frontend.sh use the test builds; tests/check-release.sh
+  checks the published package through chimera-run: build.json says
+  "release" and the version does not end in "tests"; projects of testbed's
+  and Playground 3D's games are refused, "Could not find suitable engine
+  plugin" (ScummVM's detector knows every engine's games, built or not, so
+  it finds them and has no engine to run them); Beneath a Steel Sky, 1500
+  frames with Escape and a click in a project, ends on the native
+  reference's picture; and Chimera's contract tests pass.
+- Measured (2026-11-03): 4 of 4 on the published package (127.4 MB; the
+  test package is 127.7 MB). Run on the test package instead, the first two
+  checks fail (it says "tests", and it plays both games). With the
+  project's click moved to another place, the game check fails (61 of 200
+  lines differ).
+
 ## Not tried yet (2026-11-03)
 
 - **Windows.** Neither the frontend test's scenario on the Windows build
@@ -459,7 +577,5 @@ and no 3D game has been tried.
 
 ## Open, for the owner (2026-11-03)
 
-- **The libraries' versions.** libretro-deps holds old releases (zlib
-  1.2.8, libpng 1.6.25 beta, FreeType 2.x of its time); moving each to its
-  current release is possible and not done.
-- **Publishing**: a repository, CI, the roster, the README's row.
+- **Publishing**: a repository, CI, the roster, the README's row. Not yet
+  (the owner, 2026-11-03).

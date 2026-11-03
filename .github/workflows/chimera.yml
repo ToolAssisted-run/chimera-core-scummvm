@@ -101,6 +101,12 @@ jobs:
             build/deps/mesa-24.0.9.tar.xz
           key: mesa-24.0.9-${{ runner.os }}-${{ hashFiles('waterbox/setup-mesa.sh') }}-${{ hashFiles('chimera-checkout/extern/chimera-common-minibox/.git') }}
 
+      - name: Cache the libraries' release tarballs (waterbox/deps.lock)
+        uses: actions/cache@v4
+        with:
+          path: build/deps
+          key: deps-${{ hashFiles('waterbox/deps.lock') }}-mesa-24.0.9
+
       - name: Build Mesa
         run: |
           mb="$PWD/chimera-checkout/extern/chimera-common-minibox"
@@ -131,24 +137,41 @@ jobs:
             grep -q "^PASS $t:" gate.out || { echo "$t did not pass"; exit 1; }
           done
 
-      - name: Build and install the package
+      - name: Build and install the published package
         # The commit is the core's authoritative version: this build is the one
         # that publishes the artifact, so what it stamps is what a movie can
-        # cite. A package built by hand stamps "+local" instead.
+        # cite. A package built by hand stamps "+local" instead. It has no
+        # test engines (build-package.sh without -t).
         env:
           CORE_VERSION: ${{ github.sha }}
           MINIBOX_DIR: ${{ github.workspace }}/chimera-checkout/extern/chimera-common-minibox
         run: ./waterbox/build-package.sh -r chimera-checkout
 
-      - name: Run the frontend test
-        # the package played by chimera-run (a movie file and a project) and by
-        # Chimera's window, run headless, each last picture the native reference's
-        run: QT_LIB_DIR="$HOME/qt/6.12.0/gcc_64/lib" ./tests/run-frontend.sh --chimera-root chimera-checkout --package chimera-checkout/build/Cores/scummvm.chimeraCore
-
-      - name: Package contract tests
+      - name: Build the test package
+        # the same sources with ScummVM's two test engines, which the frontend
+        # test plays; never published
         env:
-          CHIMERA_CORES_DIR: ${{ github.workspace }}/chimera-checkout/build/Cores
-        run: chimera-checkout/build/meson-linux/source/ui/test-packages
+          CORE_VERSION: ${{ github.sha }}
+          MINIBOX_DIR: ${{ github.workspace }}/chimera-checkout/extern/chimera-common-minibox
+        run: ./waterbox/build-package.sh -t
+
+      - name: Run the frontend test
+        # the test package played by chimera-run (a movie file and a project)
+        # and by Chimera's window, run headless, each last picture the native
+        # reference's
+        run: QT_LIB_DIR="$HOME/qt/6.12.0/gcc_64/lib" ./tests/run-frontend.sh --chimera-root chimera-checkout --package build/package-tests/scummvm.chimeraCore
+
+      - name: Check the published package
+        # it says it is the release build, refuses the test engines' games,
+        # plays Beneath a Steel Sky as the native reference does, and passes
+        # Chimera's contract tests
+        run: ./tests/check-release.sh --chimera-root chimera-checkout --package chimera-checkout/build/Cores/scummvm.chimeraCore -g "$RUNNER_TEMP/freeware"
+
+      - name: Package contract tests (the test package)
+        run: |
+          mkdir -p "$RUNNER_TEMP/test-package"
+          cp build/package-tests/scummvm.chimeraCore "$RUNNER_TEMP/test-package/"
+          CHIMERA_CORES_DIR="$RUNNER_TEMP/test-package" chimera-checkout/build/meson-linux/source/ui/test-packages "$RUNNER_TEMP/test-package"
 
       - name: Publish the core package
         uses: actions/upload-artifact@v7
@@ -165,6 +188,7 @@ jobs:
           path: |
             build/gate/
             build/frontend/
+            build/release-check/
             build/*.log
 
   publish:

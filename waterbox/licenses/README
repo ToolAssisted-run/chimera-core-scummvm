@@ -1,15 +1,26 @@
-Licence texts of libraries the core builds from extern/libretro-deps, which
-carries those libraries' sources without these files:
+The licence texts of the libraries the core is built from, copied from each
+one's pinned release tarball (waterbox/deps.lock; Mesa: setup-mesa.sh) on
+2026-11-03, so that the repository carries them and the package does
+(package-licenses.json names each one):
 
-  zlib-LICENSE           zlib 1.2.8: the notice from its own zlib.h
-  FreeType-FTL.TXT       FreeType (taken under the FreeType License, one of its
-                         two licences), docs/FTL.TXT of freetype/freetype
-  fribidi-COPYING        FriBidi (LGPL-2.1-or-later), COPYING of fribidi/fribidi
-  libogg-COPYING         libogg (BSD-3-Clause), COPYING of xiph/ogg
-  libvorbis-COPYING      libvorbis (BSD-3-Clause), COPYING of xiph/vorbis
-  libFLAC-COPYING.Xiph   libFLAC (BSD-3-Clause), COPYING.Xiph of xiph/flac
-  libjpeg-README.ijg     the IJG licence of libjpeg-turbo's libjpeg API (its
-                         LICENSE.md points to this file), README.ijg of
-                         libjpeg-turbo/libjpeg-turbo
-
-Fetched 2026-11-03 from the upstream repositories named.
+  zlib-LICENSE                zlib 1.3.2 (Zlib)
+  libpng-LICENSE              libpng 1.6.59 (libpng-2.0)
+  libjpeg-turbo-LICENSE.md    libjpeg-turbo 3.2.1 (BSD-3-Clause and Zlib)
+  libjpeg-turbo-README.ijg    libjpeg-turbo 3.2.1: the IJG licence of its
+                              libjpeg API (LICENSE.md points to it)
+  freetype-LICENSE.TXT        FreeType 2.15.0: which licences it offers
+  freetype-FTL.TXT            FreeType 2.15.0: the FreeType License, the one
+                              of its two licences the core takes it under
+  fribidi-COPYING             FriBidi 1.0.18 (LGPL-2.1-or-later)
+  libogg-COPYING              libogg 1.3.6 (BSD-3-Clause)
+  libvorbis-COPYING           libvorbis 1.3.7 (BSD-3-Clause)
+  flac-COPYING.Xiph           libFLAC 1.5.0 (BSD-3-Clause)
+  libtheora-COPYING           libtheora 1.2.0 (BSD-3-Clause)
+  libtheora-LICENSE           libtheora 1.2.0: On2's statement on its patents
+  libmad-COPYING              libmad 0.16.5 (GPL-2.0-or-later)
+  libmad-COPYRIGHT            libmad 0.16.5: its copyright notice
+  faad2-COPYING               FAAD2 2.11.4 (GPL-2.0-or-later)
+  libmpeg2-COPYING            libmpeg2 0.5.1 (GPL-2.0-or-later)
+  giflib-COPYING              giflib 6.1.3 (MIT)
+  mesa-license.rst            Mesa 24.0.9 (MIT, with the other licences of
+                              its parts listed)

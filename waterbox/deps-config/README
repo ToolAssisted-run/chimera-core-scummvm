@@ -1,0 +1,16 @@
+What each library's own build (CMake, Meson or configure) would have
+generated, written once by hand for both of this core's builds (x86-64,
+Linux, glibc natively and musl in the sandbox: the same answers), so that
+deps.mk compiles the pinned sources (deps.lock) with no build system but
+make. Each file says which template it fills in. A new release in deps.lock
+is checked against its templates again.
+
+  jpeg/      libjpeg-turbo's jconfig.h, jconfigint.h, jversion.h
+  fribidi/   FriBidi's config.h and fribidi-config.h
+  ogg/ogg/   libogg's config_types.h
+  flac/      libFLAC's config.h
+  mad/       libmad's mad.h (the release's mad.h.in, filled in)
+  mpeg2/     libmpeg2's config.h
+  faad/      FAAD2's faad.h (include/faad.h.in, filled in)
+
+These files are under the licence of the library they belong to.

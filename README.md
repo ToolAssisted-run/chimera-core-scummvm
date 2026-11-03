@@ -13,7 +13,7 @@ file, `scummvm.chimeraCore`, that goes in Chimera's `cores` folder.
 Local only: this repository has no remote yet, and nothing is published.
 
 - ScummVM at commit a60993f5 (2026-11-03), with every engine ScummVM builds
-  by default and its two test engines. The 3D engines draw in software
+  by default. Its two test engines are only in the package the tests use. The 3D engines draw in software
   (ScummVM's TinyGL) or with an OpenGL built into the core (Mesa's
   softpipe), which the two engines that have only OpenGL (The Colony and
   Thimbleweed Park) always use. No graphics card is used.
@@ -70,5 +70,5 @@ This repository's own code is MIT; the patches to ScummVM are GPL-3.0-or-later,
 as ScummVM is. The built core is distributed under the GPL-3.0-or-later.
 The libraries it is built with (zlib, libpng, libjpeg-turbo, FreeType,
 FriBidi, libogg, libvorbis, libtheora, libFLAC, libmad, FAAD2, libmpeg2,
-giflib, Mesa) are each under their own licence. The package carries every licence
+giflib, Mesa), each its current release, are each under their own licence. The package carries every licence
 text. See [LICENSE](LICENSE).

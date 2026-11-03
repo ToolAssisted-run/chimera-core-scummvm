@@ -1,4 +1,4 @@
-/* data.S - ScummVM's data files (build/engine-data.zip, made by
+/* data.S - ScummVM's data files (build/<build>/engine-data.zip, made by
  * make-data.py from the list scummvm-objs.mk writes), built into the core.
  * chimera-machine.cpp reads them as a zip archive in memory. */
 	.section .rodata.chimera_engine_data, "a"

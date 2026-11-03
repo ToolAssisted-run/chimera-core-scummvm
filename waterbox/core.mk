@@ -19,7 +19,7 @@ CORE_C_OBJS := $(B)/core/backend/coroutine.o $(B)/core/compat/libc-same.o
 
 # ScummVM's data files, one zip (stored, in name order, every date the same),
 # built into the core and read from its memory (data.S)
-DATA_ZIP := $(ROOT)/build/engine-data.zip
+DATA_ZIP := $(B)/engine-data.zip
 $(SVM)/datafiles.txt: $(SVM)/link.stamp ;
 $(DATA_ZIP): $(SVM)/datafiles.txt make-data.py
 	python3 make-data.py $(SVM)/datafiles.txt $@

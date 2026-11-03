@@ -2,7 +2,3 @@
 	path = extern/scummvm
 	url = https://github.com/scummvm/scummvm.git
 	shallow = true
-[submodule "extern/libretro-deps"]
-	path = extern/libretro-deps
-	url = https://github.com/libretro/libretro-deps
-	shallow = true

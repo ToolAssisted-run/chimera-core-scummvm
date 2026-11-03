@@ -7,7 +7,11 @@
 # Usage: make -f native.mk -j4 MB=<miniBox checkout>
 
 .DEFAULT_GOAL := all
-FLAVOR := native
+# TEST_ENGINES=no leaves out ScummVM's two test engines (testbed and
+# Playground 3D): the published package's build, in its own folder
+# (build/native-release). The tests build and use the one with them.
+TEST_ENGINES ?= yes
+FLAVOR := native$(if $(filter no,$(TEST_ENGINES)),-release,)
 CC  := gcc
 CXX := g++
 DEPS_CFLAGS :=

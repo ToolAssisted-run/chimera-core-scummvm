@@ -10,7 +10,11 @@
 # Usage: make -f guest.mk -j4 MB=<miniBox checkout>
 
 .DEFAULT_GOAL := all
-FLAVOR := guest
+# TEST_ENGINES=no leaves out ScummVM's two test engines (testbed and
+# Playground 3D): the published package's build, in its own folder
+# (build/guest-release). The tests build and use the one with them.
+TEST_ENGINES ?= yes
+FLAVOR := guest$(if $(filter no,$(TEST_ENGINES)),-release,)
 MB     ?= $(MINIBOX_DIR)
 MBUILD := $(abspath $(MB))/build/meson-cpp
 SR     := $(MBUILD)/guest-sysroot

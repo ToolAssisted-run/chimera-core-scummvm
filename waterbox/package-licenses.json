@@ -2,7 +2,7 @@
   "package": "scummvm",
   "effectiveTerms": "GPL-3.0-or-later",
   "commercialUse": "allowed",
-  "note": "The built core combines this repository's code (MIT): the backend, the exports and the build in waterbox/; the patches in patches/ (GPL-3.0-or-later, as ScummVM); ScummVM (GPL-3.0-or-later, with the parts under the other free licences ScummVM lists in its LICENSES folder), compiled from the submodule extern/scummvm with the patches applied, together with ScummVM's data files for its engines, fonts and GUI themes; the libraries ScummVM is built with, compiled from the submodule extern/libretro-deps, each under its own licence; and Mesa (MIT), the OpenGL the 3D engines draw with, compiled from its release tarball. The whole is distributed under the GPL-3.0-or-later. The package carries no game: the user opens their own, as a zip of its folder. The corresponding source of each part is linked below by exact commit.",
+  "note": "The built core combines this repository's code (MIT): the backend, the exports and the build in waterbox/; the patches in patches/ (GPL-3.0-or-later, as ScummVM); ScummVM (GPL-3.0-or-later, with the parts under the other free licences ScummVM lists in its LICENSES folder), compiled from the submodule extern/scummvm with the patches applied, together with ScummVM's data files for its engines, fonts and GUI themes; the libraries ScummVM is built with, each compiled from its own release tarball (pinned by SHA-256 in waterbox/deps.lock) and under its own licence; and Mesa (MIT), the OpenGL the 3D engines draw with, compiled from its release tarball. The whole is distributed under the GPL-3.0-or-later. The package carries no game: the user opens their own, as a zip of its folder. The corresponding source of each part is linked below by exact commit.",
   "components": [
     {
       "name": "chimera-core-scummvm (the backend, the exports and the build)",
@@ -125,123 +125,147 @@
       "sourceUrl": "https://github.com/scummvm/scummvm/archive/{commit}.tar.gz"
     },
     {
-      "name": "zlib 1.2.8",
+      "name": "zlib",
       "license": "Zlib",
-      "url": "https://zlib.net/",
-      "commit": "{submodule:extern/libretro-deps}",
+      "url": "https://zlib.net",
+      "version": "1.3.2",
       "file": "waterbox/licenses/zlib-LICENSE",
-      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+      "sourceUrl": "https://github.com/madler/zlib/releases/download/v1.3.2/zlib-1.3.2.tar.xz"
     },
     {
-      "name": "libpng 1.6.25",
+      "name": "libpng",
       "license": "libpng-2.0",
       "url": "http://www.libpng.org/pub/png/libpng.html",
-      "commit": "{submodule:extern/libretro-deps}",
-      "file": "extern/libretro-deps/libpng/LICENSE",
-      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+      "version": "1.6.59",
+      "file": "waterbox/licenses/libpng-LICENSE",
+      "sourceUrl": "https://download.sourceforge.net/libpng/libpng-1.6.59.tar.xz"
     },
     {
       "name": "libjpeg-turbo (libjpeg API 8): its licences",
       "license": "BSD-3-Clause AND Zlib",
-      "url": "https://libjpeg-turbo.org/",
-      "commit": "{submodule:extern/libretro-deps}",
-      "file": "extern/libretro-deps/libjpeg/LICENSE.md",
-      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+      "url": "https://libjpeg-turbo.org",
+      "version": "3.2.1",
+      "file": "waterbox/licenses/libjpeg-turbo-LICENSE.md",
+      "sourceUrl": "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/3.2.1/libjpeg-turbo-3.2.1.tar.gz"
     },
     {
       "name": "libjpeg-turbo: the IJG licence of the libjpeg API",
       "license": "IJG",
-      "url": "https://libjpeg-turbo.org/",
-      "commit": "{submodule:extern/libretro-deps}",
-      "file": "waterbox/licenses/libjpeg-README.ijg",
-      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+      "url": "https://libjpeg-turbo.org",
+      "version": "3.2.1",
+      "file": "waterbox/licenses/libjpeg-turbo-README.ijg",
+      "sourceUrl": "https://github.com/libjpeg-turbo/libjpeg-turbo/releases/download/3.2.1/libjpeg-turbo-3.2.1.tar.gz"
     },
     {
-      "name": "FreeType 2",
+      "name": "FreeType (under the FreeType License)",
       "license": "FTL",
-      "url": "https://freetype.org/",
-      "commit": "{submodule:extern/libretro-deps}",
-      "file": "waterbox/licenses/FreeType-FTL.TXT",
-      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+      "url": "https://freetype.org",
+      "version": "2.15.0",
+      "file": "waterbox/licenses/freetype-FTL.TXT",
+      "sourceUrl": "https://download.savannah.gnu.org/releases/freetype/freetype-2.15.0.tar.xz"
     },
     {
-      "name": "FriBidi 1.0.13",
+      "name": "FreeType: the licences it offers",
+      "license": "FTL OR GPL-2.0-or-later",
+      "url": "https://freetype.org",
+      "version": "2.15.0",
+      "file": "waterbox/licenses/freetype-LICENSE.TXT",
+      "sourceUrl": "https://download.savannah.gnu.org/releases/freetype/freetype-2.15.0.tar.xz"
+    },
+    {
+      "name": "FriBidi",
       "license": "LGPL-2.1-or-later",
       "url": "https://github.com/fribidi/fribidi",
-      "commit": "{submodule:extern/libretro-deps}",
+      "version": "1.0.18",
       "file": "waterbox/licenses/fribidi-COPYING",
-      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+      "sourceUrl": "https://github.com/fribidi/fribidi/releases/download/v1.0.18/fribidi-1.0.18.tar.xz"
     },
     {
       "name": "libogg",
       "license": "BSD-3-Clause",
       "url": "https://xiph.org/ogg/",
-      "commit": "{submodule:extern/libretro-deps}",
+      "version": "1.3.6",
       "file": "waterbox/licenses/libogg-COPYING",
-      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+      "sourceUrl": "https://downloads.xiph.org/releases/ogg/libogg-1.3.6.tar.xz"
     },
     {
       "name": "libvorbis",
       "license": "BSD-3-Clause",
       "url": "https://xiph.org/vorbis/",
-      "commit": "{submodule:extern/libretro-deps}",
+      "version": "1.3.7",
       "file": "waterbox/licenses/libvorbis-COPYING",
-      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
-    },
-    {
-      "name": "libtheora (the decoder)",
-      "license": "BSD-3-Clause",
-      "url": "https://theora.org/",
-      "commit": "{submodule:extern/libretro-deps}",
-      "file": "extern/libretro-deps/theora/COPYING",
-      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+      "sourceUrl": "https://downloads.xiph.org/releases/vorbis/libvorbis-1.3.7.tar.xz"
     },
     {
       "name": "libFLAC (the decoder)",
       "license": "BSD-3-Clause",
       "url": "https://xiph.org/flac/",
-      "commit": "{submodule:extern/libretro-deps}",
-      "file": "waterbox/licenses/libFLAC-COPYING.Xiph",
-      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+      "version": "1.5.0",
+      "file": "waterbox/licenses/flac-COPYING.Xiph",
+      "sourceUrl": "https://downloads.xiph.org/releases/flac/flac-1.5.0.tar.xz"
     },
     {
-      "name": "libmad 0.15.1b",
+      "name": "libtheora (the decoder)",
+      "license": "BSD-3-Clause",
+      "url": "https://www.theora.org",
+      "version": "1.2.0",
+      "file": "waterbox/licenses/libtheora-COPYING",
+      "sourceUrl": "https://downloads.xiph.org/releases/theora/libtheora-1.2.0.tar.xz"
+    },
+    {
+      "name": "libtheora: On2's statement on its patents",
+      "license": "BSD-3-Clause",
+      "url": "https://www.theora.org",
+      "version": "1.2.0",
+      "file": "waterbox/licenses/libtheora-LICENSE",
+      "sourceUrl": "https://downloads.xiph.org/releases/theora/libtheora-1.2.0.tar.xz"
+    },
+    {
+      "name": "libmad (Tenacity's continuation)",
       "license": "GPL-2.0-or-later",
-      "url": "https://www.underbit.com/products/mad/",
-      "commit": "{submodule:extern/libretro-deps}",
-      "file": "extern/libretro-deps/libmad/COPYING",
-      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+      "url": "https://codeberg.org/tenacityteam/libmad",
+      "version": "0.16.5",
+      "file": "waterbox/licenses/libmad-COPYING",
+      "sourceUrl": "https://codeberg.org/tenacityteam/libmad/releases/download/0.16.5/libmad-0.16.5.tar.gz"
     },
     {
-      "name": "FAAD2 2.7",
+      "name": "libmad: its copyright notice",
+      "license": "GPL-2.0-or-later",
+      "url": "https://codeberg.org/tenacityteam/libmad",
+      "version": "0.16.5",
+      "file": "waterbox/licenses/libmad-COPYRIGHT",
+      "sourceUrl": "https://codeberg.org/tenacityteam/libmad/releases/download/0.16.5/libmad-0.16.5.tar.gz"
+    },
+    {
+      "name": "FAAD2",
       "license": "GPL-2.0-or-later",
       "url": "https://github.com/knik0/faad2",
-      "commit": "{submodule:extern/libretro-deps}",
-      "file": "extern/libretro-deps/libfaad/COPYING",
-      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+      "version": "2.11.4",
+      "file": "waterbox/licenses/faad2-COPYING",
+      "sourceUrl": "https://github.com/knik0/faad2/archive/refs/tags/2.11.4.tar.gz"
     },
     {
-      "name": "libmpeg2 0.5.1",
+      "name": "libmpeg2",
       "license": "GPL-2.0-or-later",
-      "url": "https://libmpeg2.sourceforge.io/",
-      "commit": "{submodule:extern/libretro-deps}",
-      "file": "extern/libretro-deps/libmpeg2/COPYING",
-      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+      "url": "https://libmpeg2.sourceforge.io",
+      "version": "0.5.1",
+      "file": "waterbox/licenses/libmpeg2-COPYING",
+      "sourceUrl": "https://download.videolan.org/pub/contrib/libmpeg2/libmpeg2-0.5.1.tar.gz"
     },
     {
-      "name": "giflib 5",
+      "name": "giflib",
       "license": "MIT",
-      "url": "https://giflib.sourceforge.net/",
-      "commit": "{submodule:extern/libretro-deps}",
-      "file": "extern/libretro-deps/giflib/COPYING",
-      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+      "url": "https://giflib.sourceforge.net",
+      "version": "6.1.3",
+      "file": "waterbox/licenses/giflib-COPYING",
+      "sourceUrl": "https://download.sourceforge.net/giflib/giflib-6.1.3.tar.gz"
     },
     {
       "name": "Mesa (softpipe + OSMesa, the core's OpenGL)",
       "license": "MIT",
       "url": "https://gitlab.freedesktop.org/mesa/mesa",
       "version": "24.0.9",
-      "file": "build/mesa/docs/license.rst",
+      "file": "waterbox/licenses/mesa-license.rst",
       "sourceUrl": "https://archive.mesa3d.org/mesa-24.0.9.tar.xz"
     }
   ]

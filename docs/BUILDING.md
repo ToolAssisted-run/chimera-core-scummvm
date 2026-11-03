@@ -3,8 +3,9 @@
 ## Requirements
 
 - Linux on x86-64, with GCC (the guest kit's compiler is the system's, over
-  miniBox's sysroot), make, Python 3, git, binutils, curl (to fetch Mesa
-  once, and the freeware games the tests play).
+  miniBox's sysroot), make, Python 3, git, binutils, curl (to fetch the
+  libraries' and Mesa's release tarballs once, and the freeware games the
+  tests play).
 - For Mesa's build: meson and ninja, bison, flex, and Python's mako and
   packaging (`sudo apt-get install meson ninja-build bison flex
   python3-mako python3-packaging`). Without a meson that has mako,
@@ -36,15 +37,21 @@
   applies `patches/` to it in place; `waterbox/apply-patches.sh` leaves a
   tree that already has the whole series alone and refuses one that has
   part of it.
-- `extern/libretro-deps` is libretro's collection of library sources at
-  bab7d258, the commit ScummVM's own libretro port builds its libraries
-  from.
-- Mesa 24.0.9 is not a submodule: `waterbox/setup-mesa.sh` downloads
+- The libraries ScummVM is built with (zlib, libpng, libjpeg-turbo,
+  FreeType, FriBidi, libogg, libvorbis, libFLAC, libmad, FAAD2, libtheora,
+  libmpeg2, giflib) are not submodules: `waterbox/deps.lock` names each
+  one's current upstream release, its tarball's address and the tarball's
+  SHA-256. `waterbox/fetch-deps.sh` downloads them into `build/deps/` (or
+  `$CHIMERA_DEPS_DIR`, which may already hold them), refuses a tarball that
+  is not the pinned one, and unpacks them into `build/src/`. The builds run
+  it themselves before anything else. What each library's own build system
+  would generate (its config.h and the like) is in `waterbox/deps-config/`.
+- Mesa 24.0.9 is not a submodule either: `waterbox/setup-mesa.sh` downloads
   `https://archive.mesa3d.org/mesa-24.0.9.tar.xz` into `build/deps/`
   (`MESA_TARBALL=<path>` uses one already on the computer; either way it is
   checked against its SHA256) and unpacks it into `build/mesa/`.
 
-Both submodules are shallow (`shallow = true` in `.gitmodules`).
+The one submodule is shallow (`shallow = true` in `.gitmodules`).
 
 ## The steps
 
@@ -68,15 +75,27 @@ the memory limit the other cores' builds use:
    `core.wbx` in the sandbox.
 2. `run make -f guest.mk -j4 MB=$MB`: `build/guest/core.wbx`, checked by
    miniBox's `check-wbx.sh`.
-3. `./build-package.sh -m $MB` (or `-o <folder>`): `scummvm.chimeraCore`.
-   It does step 2 itself.
+3. `./build-package.sh -m $MB` (or `-o <folder>`): the published package,
+   `build/package/scummvm.chimeraCore`, and `./build-package.sh -t -m $MB`:
+   the test package, `build/package-tests/scummvm.chimeraCore`. Each does
+   its own guest build.
 
-Each build does, in order: the libraries (`deps.mk`, into
-`build/<build>/deps`), ScummVM's configure and Makefile (`scummvm.mk`,
-in `build/<build>/scummvm`; `scummvm-objs.mk` adds the core's own C++ to
-ScummVM's make and lists what to link), ScummVM's data files and the 3D
-engines' shaders as one zip (`make-data.py`, `build/engine-data.zip`), and
-the link with Mesa (`core.mk`, `native.mk`, `guest.mk`).
+**Two packages.** ScummVM's two test engines, testbed and Playground 3D,
+are what the tests play, and a user has no use for them. The published
+package leaves them out: its guest is built with `TEST_ENGINES=no`, in
+`build/guest-release`, by `build-package.sh` without `-t`. The test package
+has them: `build/guest` (and the native reference, `build/native`, always
+has them). The test package's version ends in "tests", and the package's
+`build.json` says `"variant": "release"` or `"variant": "tests"`. Nothing
+else differs: the same sources, settings and texts.
+
+Each build does, in order: the libraries' sources (`fetch-deps.sh`, once
+for all builds), the libraries (`deps.mk`, into `build/<build>/deps`),
+ScummVM's configure and Makefile (`scummvm.mk`, in `build/<build>/scummvm`;
+`scummvm-objs.mk` adds the core's own C++ to ScummVM's make and lists what
+to link), ScummVM's data files and the 3D engines' shaders as one zip
+(`make-data.py`, `build/<build>/engine-data.zip`), and the link with Mesa
+(`core.mk`, `native.mk`, `guest.mk`).
 
 ## The tests
 
@@ -91,9 +110,15 @@ the link with Mesa (`core.mk`, `native.mk`, `guest.mk`).
   `CHIMERA_ROOT` for the text keys check (Chimera's
   tools/check-core-texts.py). About 10 minutes once built.
 - `tests/run-frontend.sh --chimera-root <chimera> [--package <file>]`: the
-  package through `chimera-run` and through Chimera's window (headless).
+  test package through `chimera-run` and through Chimera's window
+  (headless); without `--package` it makes one (`build-package.sh -t`).
   The window needs Qt's libraries: `QT_LIB_DIR=<Qt>/gcc_64/lib`.
-- Chimera's contract tests, against the package's folder:
+- `tests/check-release.sh --chimera-root <chimera> --package <file> [-g <freeware games>]`:
+  the published package, through `chimera-run`. It says it is the release
+  build, it refuses testbed's and Playground 3D's games (the engines are
+  not in it), and, with the freeware games, Beneath a Steel Sky plays as the
+  native reference does. It also runs Chimera's contract tests on it.
+- Chimera's contract tests, against a package's folder (either package):
 
       CHIMERA_CORES_DIR=<folder> <chimera>/build/meson-linux/source/ui/test-packages
 
@@ -125,6 +150,9 @@ written as they are.
   guest.mk passes); `build/guest/scummvm/config.mk` must name the guest
   compiler (`CXX := g++ -specs ...`). Delete `build/guest/scummvm` and build
   again.
+- `fetch-deps: ... is not the pinned ...`: a download gave another file than
+  the one deps.lock names (a changed release, or a broken download). Look
+  at the address before changing the pinned SHA-256.
 - `no Mesa at .../build/mesa/...`: step 0 was not run for that build.
 - check-wbx says the core "declares PT_TLS": that is expected. Mesa keeps
   its current context in thread-local variables, and miniBox gives a guest
