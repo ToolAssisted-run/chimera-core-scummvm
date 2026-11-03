@@ -1,0 +1,47 @@
+This repository is licensed as follows:
+
+- Everything original to this repository - the backend and the exports in
+  waterbox/ (backend/, wbx-entry.cpp, compat/), the harnesses, the build
+  scripts and makefiles, tests/, waterbox.config, file_slots.json,
+  default_keybinds.json, the language tables and docs/ - is under the MIT
+  License below.
+
+- patches/ contains changes to ScummVM's own source files, which are under
+  ScummVM's licence, the GNU General Public License version 3 or later
+  (extern/scummvm/COPYING).
+
+- ScummVM is the submodule extern/scummvm, unmodified in the repository (the
+  build applies patches/ to it), under its own licences: GPL-3.0-or-later,
+  with some parts under other free licences listed in extern/scummvm/LICENSES.
+  The libraries it is built with are the submodule extern/libretro-deps, each
+  under its own licence (waterbox/package-licenses.json names them all;
+  waterbox/licenses/ holds the texts that submodule lacks).
+
+- BUILT ARTIFACTS (core.wbx and the core package) combine this repository's
+  code with ScummVM and those libraries and are distributed under the
+  GPL-3.0-or-later. The MIT License below permits that combination. The
+  package carries no game: the user brings their own, as a zip of its folder.
+
+----------------------------------------------------------------------------
+
+MIT License
+
+Copyright (c) 2026 Sergio Martin and the Chimera contributors
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

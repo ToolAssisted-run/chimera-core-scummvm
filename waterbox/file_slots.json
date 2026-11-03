@@ -1,0 +1,25 @@
+{
+  "_comment": "This file lists the kinds of file a ScummVM project can hold. Chimera's New Project window is built from it. The game is a zip of its folder; ScummVM's own detector finds the game in it.",
+  "slots": [
+    {
+      "id": "game",
+      "title": "slot.game",
+      "min": 1,
+      "max": 1,
+      "formats": [
+        "zip"
+      ],
+      "help": "slot.game.help"
+    },
+    {
+      "id": "savedata",
+      "title": "slot.savedata",
+      "min": 0,
+      "max": 1,
+      "formats": [
+        "zip"
+      ],
+      "help": "slot.savedata.help"
+    }
+  ]
+}

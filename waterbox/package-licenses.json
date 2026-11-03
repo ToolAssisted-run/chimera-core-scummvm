@@ -1,0 +1,240 @@
+{
+  "package": "scummvm",
+  "effectiveTerms": "GPL-3.0-or-later",
+  "commercialUse": "allowed",
+  "note": "The built core combines this repository's code (MIT): the backend, the exports and the build in waterbox/; the patches in patches/ (GPL-3.0-or-later, as ScummVM); ScummVM (GPL-3.0-or-later, with the parts under the other free licences ScummVM lists in its LICENSES folder), compiled from the submodule extern/scummvm with the patches applied, together with ScummVM's data files for its engines, fonts and GUI themes; and the libraries ScummVM is built with, compiled from the submodule extern/libretro-deps, each under its own licence. The whole is distributed under the GPL-3.0-or-later. The package carries no game: the user opens their own, as a zip of its folder. The corresponding source of each part is linked below by exact commit.",
+  "components": [
+    {
+      "name": "chimera-core-scummvm (the backend, the exports and the build)",
+      "license": "MIT",
+      "url": "https://github.com/ToolAssisted-run/chimera-core-scummvm",
+      "commit": "{selfCommit}",
+      "file": "LICENSE",
+      "sourceUrl": "https://github.com/ToolAssisted-run/chimera-core-scummvm/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "ScummVM",
+      "license": "GPL-3.0-or-later",
+      "url": "https://github.com/scummvm/scummvm",
+      "commit": "{submodule:extern/scummvm}",
+      "file": "extern/scummvm/COPYING",
+      "sourceUrl": "https://github.com/scummvm/scummvm/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "ScummVM: parts under the BSD licence",
+      "license": "BSD-3-Clause",
+      "url": "https://github.com/scummvm/scummvm",
+      "commit": "{submodule:extern/scummvm}",
+      "file": "extern/scummvm/LICENSES/COPYING.BSD",
+      "sourceUrl": "https://github.com/scummvm/scummvm/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "ScummVM: parts under the GNU LGPL",
+      "license": "LGPL-2.1-or-later",
+      "url": "https://github.com/scummvm/scummvm",
+      "commit": "{submodule:extern/scummvm}",
+      "file": "extern/scummvm/LICENSES/COPYING.LGPL",
+      "sourceUrl": "https://github.com/scummvm/scummvm/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "ScummVM: parts under the MIT licence (glm)",
+      "license": "MIT",
+      "url": "https://github.com/scummvm/scummvm",
+      "commit": "{submodule:extern/scummvm}",
+      "file": "extern/scummvm/LICENSES/COPYING.MIT",
+      "sourceUrl": "https://github.com/scummvm/scummvm/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "ScummVM: Lua",
+      "license": "MIT",
+      "url": "https://github.com/scummvm/scummvm",
+      "commit": "{submodule:extern/scummvm}",
+      "file": "extern/scummvm/LICENSES/COPYING.LUA",
+      "sourceUrl": "https://github.com/scummvm/scummvm/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "ScummVM: TinyGL",
+      "license": "Zlib",
+      "url": "https://github.com/scummvm/scummvm",
+      "commit": "{submodule:extern/scummvm}",
+      "file": "extern/scummvm/LICENSES/COPYING.TINYGL",
+      "sourceUrl": "https://github.com/scummvm/scummvm/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "ScummVM: the Matroska parts",
+      "license": "BSD-3-Clause",
+      "url": "https://github.com/scummvm/scummvm",
+      "commit": "{submodule:extern/scummvm}",
+      "file": "extern/scummvm/LICENSES/COPYING.MKV",
+      "sourceUrl": "https://github.com/scummvm/scummvm/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "ScummVM: parts under the MPL",
+      "license": "MPL-2.0",
+      "url": "https://github.com/scummvm/scummvm",
+      "commit": "{submodule:extern/scummvm}",
+      "file": "extern/scummvm/LICENSES/COPYING.MPL",
+      "sourceUrl": "https://github.com/scummvm/scummvm/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "ScummVM: parts under the Boost licence",
+      "license": "BSL-1.0",
+      "url": "https://github.com/scummvm/scummvm",
+      "commit": "{submodule:extern/scummvm}",
+      "file": "extern/scummvm/LICENSES/COPYING.BSL",
+      "sourceUrl": "https://github.com/scummvm/scummvm/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "ScummVM: the patch files (.patchr)",
+      "license": "ISC",
+      "url": "https://github.com/scummvm/scummvm",
+      "commit": "{submodule:extern/scummvm}",
+      "file": "extern/scummvm/LICENSES/COPYING.ISC",
+      "sourceUrl": "https://github.com/scummvm/scummvm/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "ScummVM: GUI theme fonts under the OFL",
+      "license": "OFL-1.1",
+      "url": "https://github.com/scummvm/scummvm",
+      "commit": "{submodule:extern/scummvm}",
+      "file": "extern/scummvm/LICENSES/COPYING.OFL",
+      "sourceUrl": "https://github.com/scummvm/scummvm/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "ScummVM: GUI theme files under the Apache licence",
+      "license": "Apache-2.0",
+      "url": "https://github.com/scummvm/scummvm",
+      "commit": "{submodule:extern/scummvm}",
+      "file": "extern/scummvm/LICENSES/COPYING.Apache",
+      "sourceUrl": "https://github.com/scummvm/scummvm/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "ScummVM: the AGS engine's FreeType autohinter (Catharon License)",
+      "license": "Catharon",
+      "url": "https://github.com/scummvm/scummvm",
+      "commit": "{submodule:extern/scummvm}",
+      "file": "extern/scummvm/LICENSES/CatharonLicense.txt",
+      "sourceUrl": "https://github.com/scummvm/scummvm/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "ScummVM: glad",
+      "license": "MIT",
+      "url": "https://github.com/scummvm/scummvm",
+      "commit": "{submodule:extern/scummvm}",
+      "file": "extern/scummvm/LICENSES/COPYING.GLAD",
+      "sourceUrl": "https://github.com/scummvm/scummvm/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "zlib 1.2.8",
+      "license": "Zlib",
+      "url": "https://zlib.net/",
+      "commit": "{submodule:extern/libretro-deps}",
+      "file": "waterbox/licenses/zlib-LICENSE",
+      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "libpng 1.6.25",
+      "license": "libpng-2.0",
+      "url": "http://www.libpng.org/pub/png/libpng.html",
+      "commit": "{submodule:extern/libretro-deps}",
+      "file": "extern/libretro-deps/libpng/LICENSE",
+      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "libjpeg-turbo (libjpeg API 8): its licences",
+      "license": "BSD-3-Clause AND Zlib",
+      "url": "https://libjpeg-turbo.org/",
+      "commit": "{submodule:extern/libretro-deps}",
+      "file": "extern/libretro-deps/libjpeg/LICENSE.md",
+      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "libjpeg-turbo: the IJG licence of the libjpeg API",
+      "license": "IJG",
+      "url": "https://libjpeg-turbo.org/",
+      "commit": "{submodule:extern/libretro-deps}",
+      "file": "waterbox/licenses/libjpeg-README.ijg",
+      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "FreeType 2",
+      "license": "FTL",
+      "url": "https://freetype.org/",
+      "commit": "{submodule:extern/libretro-deps}",
+      "file": "waterbox/licenses/FreeType-FTL.TXT",
+      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "FriBidi 1.0.13",
+      "license": "LGPL-2.1-or-later",
+      "url": "https://github.com/fribidi/fribidi",
+      "commit": "{submodule:extern/libretro-deps}",
+      "file": "waterbox/licenses/fribidi-COPYING",
+      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "libogg",
+      "license": "BSD-3-Clause",
+      "url": "https://xiph.org/ogg/",
+      "commit": "{submodule:extern/libretro-deps}",
+      "file": "waterbox/licenses/libogg-COPYING",
+      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "libvorbis",
+      "license": "BSD-3-Clause",
+      "url": "https://xiph.org/vorbis/",
+      "commit": "{submodule:extern/libretro-deps}",
+      "file": "waterbox/licenses/libvorbis-COPYING",
+      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "libtheora (the decoder)",
+      "license": "BSD-3-Clause",
+      "url": "https://theora.org/",
+      "commit": "{submodule:extern/libretro-deps}",
+      "file": "extern/libretro-deps/theora/COPYING",
+      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "libFLAC (the decoder)",
+      "license": "BSD-3-Clause",
+      "url": "https://xiph.org/flac/",
+      "commit": "{submodule:extern/libretro-deps}",
+      "file": "waterbox/licenses/libFLAC-COPYING.Xiph",
+      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "libmad 0.15.1b",
+      "license": "GPL-2.0-or-later",
+      "url": "https://www.underbit.com/products/mad/",
+      "commit": "{submodule:extern/libretro-deps}",
+      "file": "extern/libretro-deps/libmad/COPYING",
+      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "FAAD2 2.7",
+      "license": "GPL-2.0-or-later",
+      "url": "https://github.com/knik0/faad2",
+      "commit": "{submodule:extern/libretro-deps}",
+      "file": "extern/libretro-deps/libfaad/COPYING",
+      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "libmpeg2 0.5.1",
+      "license": "GPL-2.0-or-later",
+      "url": "https://libmpeg2.sourceforge.io/",
+      "commit": "{submodule:extern/libretro-deps}",
+      "file": "extern/libretro-deps/libmpeg2/COPYING",
+      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "giflib 5",
+      "license": "MIT",
+      "url": "https://giflib.sourceforge.net/",
+      "commit": "{submodule:extern/libretro-deps}",
+      "file": "extern/libretro-deps/giflib/COPYING",
+      "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+    }
+  ]
+}

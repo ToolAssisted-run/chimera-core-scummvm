@@ -1,0 +1,50 @@
+Chimera: no launcher, and a game that cannot run says why.
+
+A Chimera machine plays the one game its project gives. When ScummVM would
+show its launcher (no game was found, or the player asked to return to it)
+or its error box (the engine could not start), it calls the core instead,
+which ends the machine with ScummVM's reason. Only with CHIMERA_BACKEND
+defined (the core defines it for base/main.cpp alone); upstream's builds
+are unchanged.
+
+--- a/base/main.cpp
++++ b/base/main.cpp
+@@ -100,7 +100,18 @@
+ 
+ #include "gui/dump-all-dialogs.h"
+ 
++#ifdef CHIMERA_BACKEND
++// A Chimera machine plays the one game its project gives: there is no
++// launcher, and a game that cannot run ends the machine with ScummVM's
++// reason instead of showing an error box. Neither returns.
++void chimera_launcher_reached();
++void chimera_game_error(const char *desc);
++#endif
++
+ static bool launcherDialog() {
++#ifdef CHIMERA_BACKEND
++	chimera_launcher_reached();
++#endif
+ 
+ 	// Discard any command line options. Those that affect the graphics
+ 	// mode and the others (like bootparam etc.) should not
+@@ -867,6 +878,9 @@
+ 			// Did an error occur ?
+ 			if (result.getCode() != Common::kNoError && result.getCode() != Common::kUserCanceled) {
+ 				// Shows an informative error dialog if starting the selected game failed.
++#ifdef CHIMERA_BACKEND
++				chimera_game_error(result.getDesc().c_str());
++#endif
+ 				GUI::displayErrorDialog(result, _("Error running game:"));
+ 			}
+ 
+@@ -916,6 +930,9 @@
+ 		} else {
+ 			DebugMan.removeAllDebugChannels();
+ 
++#ifdef CHIMERA_BACKEND
++			chimera_game_error(result.getDesc().c_str());
++#endif
+ 			GUI::displayErrorDialog(result, _("Error running game:"));
+ 
+ 			// Clear the active domain

@@ -1,0 +1,15 @@
+Licence texts of libraries the core builds from extern/libretro-deps, which
+carries those libraries' sources without these files:
+
+  zlib-LICENSE           zlib 1.2.8: the notice from its own zlib.h
+  FreeType-FTL.TXT       FreeType (taken under the FreeType License, one of its
+                         two licences), docs/FTL.TXT of freetype/freetype
+  fribidi-COPYING        FriBidi (LGPL-2.1-or-later), COPYING of fribidi/fribidi
+  libogg-COPYING         libogg (BSD-3-Clause), COPYING of xiph/ogg
+  libvorbis-COPYING      libvorbis (BSD-3-Clause), COPYING of xiph/vorbis
+  libFLAC-COPYING.Xiph   libFLAC (BSD-3-Clause), COPYING.Xiph of xiph/flac
+  libjpeg-README.ijg     the IJG licence of libjpeg-turbo's libjpeg API (its
+                         LICENSE.md points to this file), README.ijg of
+                         libjpeg-turbo/libjpeg-turbo
+
+Fetched 2026-11-03 from the upstream repositories named.
