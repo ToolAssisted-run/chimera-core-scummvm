@@ -15,7 +15,8 @@
  * steps from step AT (X=/Y= among them).
  *
  * GATE_STALL_US=<n> in the environment makes the harness wait n microseconds
- * of the computer's time before every step: the machine must not notice.
+ * of the computer's time before every step (GATE_STALL_EVERY=<k>: every k-th
+ * step only): the machine must not notice.
  */
 #ifndef GATE_HARNESS_H
 #define GATE_HARNESS_H
@@ -172,6 +173,8 @@ static int gate_run(const struct gate_core *c, const struct gate_opts *o)
 	FILE *framesOut = o->framesOut ? fopen(o->framesOut, "w") : NULL;
 	const char *stall = getenv("GATE_STALL_US");
 	const long stallUs = stall ? strtol(stall, 0, 0) : 0;
+	const char *stallEvery = getenv("GATE_STALL_EVERY");
+	const long stallK = stallEvery ? strtol(stallEvery, 0, 0) : 1;
 
 	for (long f = 0; f < frames; f++)
 	{
@@ -202,7 +205,7 @@ static int gate_run(const struct gate_core *c, const struct gate_opts *o)
 			prevAxes[i] = axes[i];
 		}
 
-		if (stallUs > 0)
+		if (stallUs > 0 && (stallK <= 1 || f % stallK == 0))
 			usleep((useconds_t)stallUs);
 		c->frame();
 

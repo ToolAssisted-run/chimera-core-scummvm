@@ -76,15 +76,27 @@ Common::InSaveFile *ChimeraSaveFileManager::openRawFile(const Common::String &na
 	return new Common::MemoryReadStream(copy, d.size(), DisposeAfterUse::YES);
 }
 
+/* as ScummVM's default save manager says it, so an engine that reports
+ * the error says the same */
 Common::InSaveFile *ChimeraSaveFileManager::openForLoading(const Common::String &name) {
+	if (locked(name)) {
+		setError(Common::kReadingFailed, Common::String::format("Savefile '%s' is locked and cannot be loaded", name.c_str()));
+		return nullptr;
+	}
 	Common::InSaveFile *raw = openRawFile(name);
-	return raw ? Common::wrapCompressedReadStream(raw) : nullptr;
+	if (!raw) {
+		setError(Common::kPathDoesNotExist, Common::String::format("Savefile '%s' does not exist", name.c_str()));
+		return nullptr;
+	}
+	return Common::wrapCompressedReadStream(raw);
 }
 
 bool ChimeraSaveFileManager::removeSavefile(const Common::String &name) {
 	const int i = find(name);
-	if (i < 0 || locked(name))
+	if (i < 0 || locked(name)) {
+		setError(Common::kPathDoesNotExist, "Failed to remove savefile '" + name + "': it does not exist");
 		return false;
+	}
 	_files.remove_at(i);
 	return true;
 }

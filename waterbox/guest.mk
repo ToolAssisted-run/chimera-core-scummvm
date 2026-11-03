@@ -42,7 +42,7 @@ $(SR)/lib/libstdc++.a:
 
 # the guest kit's link recipe (the DOSBox-X core's): the large code model's
 # --no-relax, the weak pthread pulls libgcc_eh needs, cxxglue for the unwinder
-$(B)/core.wbx: $(SVM)/objs.txt $(CORE_C_OBJS) $(B)/core/data.o | $(SR)/lib/libstdc++.a
+$(B)/core.wbx: $(SVM)/link.stamp $(CORE_C_OBJS) $(B)/core/data.o | $(SR)/lib/libstdc++.a
 	$(CXX) -static -no-pie -Wl,--eh-frame-hdr -Wl,-O2 -Wl,--no-relax -Wl,--strip-debug -Wl,-z,stack-size=8388608 \
 		-T $(MB)/source/guest/linkscript.T \
 		-Wl,-u,pthread_once -Wl,-u,pthread_cond_wait -Wl,-u,pthread_cond_broadcast -Wl,-u,pthread_key_create \

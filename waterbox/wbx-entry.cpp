@@ -95,5 +95,75 @@ ECL_EXPORT uint8_t *GetMemoryDomainPtr(int i) { (void)i; return NULL; }
 ECL_EXPORT int64_t GetMemoryDomainSize(int i) { (void)i; return 0; }
 ECL_EXPORT int GetMemoryDomainWritable(int i) { (void)i; return 0; }
 
+/* The heap, as a bus (as the Ruffle core does, chimera#216): what RAM
+ * Search, RAM Watch, the Hex Editor and Lua's memory library can look at.
+ * ScummVM's engines keep a game's state in objects on the heap, not in a
+ * machine's RAM, so this is ScummVM's memory and not a game's:
+ * - it is the program break's heap, from the start of its arena to the
+ *   break, where musl's allocator keeps everything under about 224 KiB (the
+ *   engines' objects and tables); larger buffers are mapped elsewhere;
+ * - an address holds a value for as long as the object lives;
+ * - addresses are the same in every run of one build of this core (the
+ *   machine is deterministic, its allocator with it) and move with another
+ *   build; a project pins its build.
+ * The bus is as long as the arena can ever get (its length is read once);
+ * past the break it reads as zeros and ignores writes, and GetBusRanges
+ * says where the break is now. Reading changes nothing in the machine: a
+ * run inside the heap is answered with a pointer to it, and the buffer for
+ * a run that crosses the break is in no savestate. The native reference has
+ * no such arena, and no bus. */
+#ifdef CHIMERA_GUEST
+#include <unistd.h>
+extern "C" {
+struct ScvmRange { unsigned long start, size; };
+struct ScvmLayout { struct ScvmRange elf, main_thread, alt_thread, sbrk, sealed, invis, plain, mmap; };
+extern struct ScvmLayout __wbxsysinfo;
+}
+#define HEAP_RUN 65536
+ECL_INVISIBLE static uint8_t g_heap_scratch[HEAP_RUN];
+ECL_INVISIBLE static int64_t g_heap_ranges[4];
+static uint8_t *heap_start(void) { return (uint8_t *)__wbxsysinfo.sbrk.start; }
+static int64_t heap_capacity(void) { return (int64_t)__wbxsysinfo.sbrk.size; }
+static int64_t heap_live(void)
+{
+	const int64_t brk = (int64_t)(uintptr_t)sbrk(0) - (int64_t)(uintptr_t)heap_start();
+	return brk < 0 ? 0 : brk > heap_capacity() ? heap_capacity() : brk;
+}
+ECL_EXPORT int32_t GetBusCount(void) { return 1; }
+ECL_EXPORT const char *GetBusName(int32_t i) { (void)i; return "Heap"; }
+ECL_EXPORT int64_t GetBusSize(int32_t i) { (void)i; return heap_capacity(); }
+ECL_EXPORT int32_t GetBusWritable(int32_t i) { (void)i; return 1; }
+ECL_EXPORT int32_t PeekBus(int32_t bus, int32_t addr)
+{
+	if (bus != 0 || addr < 0 || addr >= heap_live()) return 0;
+	return heap_start()[addr];
+}
+ECL_EXPORT void PokeBus(int32_t bus, int32_t addr, int32_t value)
+{
+	if (bus != 0 || addr < 0 || addr >= heap_live()) return;
+	heap_start()[addr] = (uint8_t)value;
+}
+ECL_EXPORT const uint8_t *ReadBus(int32_t bus, int64_t addr, int32_t len)
+{
+	const int64_t n = len < 0 ? 0 : len > HEAP_RUN ? HEAP_RUN : len;
+	const int64_t live = bus == 0 ? heap_live() : 0;
+	if (addr >= 0 && addr + n <= live)
+		return heap_start() + addr;
+	memset(g_heap_scratch, 0, (size_t)n);
+	if (addr >= 0 && addr < live)
+		memcpy(g_heap_scratch, heap_start() + addr, (size_t)(live - addr));
+	return g_heap_scratch;
+}
+ECL_EXPORT const int64_t *GetBusRanges(int32_t bus)
+{
+	if (bus != 0) return NULL;
+	g_heap_ranges[0] = 0;
+	g_heap_ranges[1] = heap_live();
+	g_heap_ranges[2] = 0;
+	g_heap_ranges[3] = 0;
+	return g_heap_ranges;
+}
+#endif
+
 /* the machine's own clock, in frames */
 ECL_EXPORT uint64_t GetCycleCount(void) { return scvm_frames(); }

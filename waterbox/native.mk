@@ -30,7 +30,7 @@ $(B)/core/run-native.o: run-native.c gate-harness.h input-names.h $(B)/core/flag
 	@mkdir -p $(dir $@)
 	gcc -O2 -Wall -c -o $@ run-native.c
 
-$(B)/run-native: $(SVM)/objs.txt $(CORE_C_OBJS) $(B)/core/data.o $(B)/core/run-native.o $(LIBM)/libchimera-m.a
+$(B)/run-native: $(SVM)/link.stamp $(CORE_C_OBJS) $(B)/core/data.o $(B)/core/run-native.o $(LIBM)/libchimera-m.a
 	g++ -no-pie -o $@ $(B)/core/run-native.o $(CORE_C_OBJS) $(B)/core/data.o $(SVM_LINK) \
 		$(LIBM)/libchimera-m.a $(SAME_WRAP_FLAGS) $(NATIVE_WRAP_FLAGS) $$(cat $(LIBM)/wrap-flags) -lm
 

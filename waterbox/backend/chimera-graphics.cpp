@@ -11,6 +11,8 @@
 /* the picture Chimera reads: B, G, R, A in memory */
 static const Graphics::PixelFormat kArgb(4, 8, 8, 8, 8, 16, 8, 0, 24);
 
+static uint32 argbOf(const byte *rgb) { return 0xFF000000u | ((uint32)rgb[0] << 16) | ((uint32)rgb[1] << 8) | rgb[2]; }
+
 ChimeraGraphicsManager::ChimeraGraphicsManager() {
 	memset(_palette, 0, sizeof _palette);
 	memset(_cursorPalette, 0, sizeof _cursorPalette);
@@ -82,7 +84,35 @@ void ChimeraGraphicsManager::fillScreen(const Common::Rect &r, uint32 col) {
 		_game.fillRect(c, col);
 }
 
-void ChimeraGraphicsManager::clearOverlay() { _overlay.fillRect(Common::Rect(_overlay.w, _overlay.h), 0); }
+/* ScummVM's GUI clears the overlay to have the game behind its dialogs: as
+ * in ScummVM's SDL backend, clearing puts a copy of the game screen in it
+ * (stretched when the overlay is the larger) */
+void ChimeraGraphicsManager::clearOverlay() {
+	uint32 pal[256];
+	for (int i = 0; i < 256; i++)
+		pal[i] = argbOf(_palette + i * 3);
+	const Graphics::PixelFormat &f = _game.format;
+	if (f.bytesPerPixel == 2 && (!_lut16 || _lutFormat != f)) {
+		if (!_lut16)
+			_lut16 = (uint32 *)malloc(65536 * 4);
+		rebuildLut(f, _lut16);
+		_lutFormat = f;
+	}
+	for (int y = 0; y < _overlay.h; y++) {
+		uint32 *o = (uint32 *)_overlay.getBasePtr(0, y);
+		const int sy = y * _game.h / _overlay.h;
+		const byte *row = (const byte *)_game.getBasePtr(0, sy);
+		for (int x = 0; x < _overlay.w; x++) {
+			const int sx = x * _game.w / _overlay.w;
+			if (f.bytesPerPixel == 1)
+				o[x] = pal[row[sx]];
+			else if (f.bytesPerPixel == 2)
+				o[x] = _lut16[((const uint16 *)row)[sx]];
+			else
+				o[x] = toArgb(f, pal, row + sx * f.bytesPerPixel);
+		}
+	}
+}
 
 void ChimeraGraphicsManager::grabOverlay(Graphics::Surface &surface) const {
 	surface.copyRectToSurface(_overlay, 0, 0, Common::Rect(MIN<int>(surface.w, _overlay.w), MIN<int>(surface.h, _overlay.h)));
@@ -139,8 +169,6 @@ void ChimeraGraphicsManager::setPalette(const byte *colors, uint start, uint num
 void ChimeraGraphicsManager::grabPalette(byte *colors, uint start, uint num) const {
 	memcpy(colors, _palette + start * 3, num * 3);
 }
-
-static uint32 argbOf(const byte *rgb) { return 0xFF000000u | ((uint32)rgb[0] << 16) | ((uint32)rgb[1] << 8) | rgb[2]; }
 
 static void copySurface(Graphics::Surface &dst, const Graphics::Surface &src) {
 	if (dst.w != src.w || dst.h != src.h || dst.format != src.format) {

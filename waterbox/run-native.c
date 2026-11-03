@@ -103,10 +103,16 @@ int main(int argc, char **argv)
 		g_clock_start = o.clockStart;
 	if (o.hostClock)
 		scvm_host_ms = host_ms;
-	/* the sandbox's environment and nothing of this computer's */
+	/* the sandbox's environment and nothing of this computer's (but the
+	 * harness's own stall settings, which gate_run reads) */
+	char stall[32] = "", every[32] = "";
+	if (getenv("GATE_STALL_US")) snprintf(stall, sizeof stall, "%s", getenv("GATE_STALL_US"));
+	if (getenv("GATE_STALL_EVERY")) snprintf(every, sizeof every, "%s", getenv("GATE_STALL_EVERY"));
 	clearenv();
 	setenv("WATERBOX", "1", 1);
 	setenv("TZ", "UTC0", 1);
+	if (stall[0]) setenv("GATE_STALL_US", stall, 1);
+	if (every[0]) setenv("GATE_STALL_EVERY", every, 1);
 	if (chdir(argv[1]) != 0)
 	{
 		perror(argv[1]);

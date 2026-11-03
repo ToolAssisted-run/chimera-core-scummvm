@@ -5,6 +5,7 @@
 		"error.no_game_slot": "The project has no game. A ScummVM project needs the game's folder, as a zip.",
 		"error.no_memory": "The core ran out of memory while starting.",
 		"error.not_zip": "%1 is not a zip file this core can read, or it is damaged.",
+		"error.rom_missing": "%1 is missing. The Music device setting asks for a Roland synthesizer, which needs its ROM files: give them as firmware, or choose another music device.",
 		"error.scummvm": "ScummVM could not run the game: %1",
 		"error.zip_empty": "%1 holds no files.",
 		"error.zip_encrypted": "%1 in the zip is protected by a password. Make the zip again without one.",
@@ -42,6 +43,6 @@
 		"slot.game": "Game",
 		"slot.game.help": "The game's folder, as a zip: every file of the game, as ScummVM would use them from a folder. A zip holding one folder is that folder. ScummVM itself finds out which game it is.",
 		"slot.savedata": "Save data",
-		"slot.savedata.help": "ScummVM's saved games to start from, as one zip of the save files (Export Save Data writes them). They are in the machine's memory from the start."
+		"slot.savedata.help": "ScummVM's saved games to start from, as one zip of the save files (what the core's save data export writes). They are in the machine's memory from the start."
 	}
 }

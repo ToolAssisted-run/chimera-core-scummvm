@@ -113,6 +113,62 @@ static uint64 frameEndUs(uint64 k) { return (k + 1) * 1000000ull / SCVM_FPS; }
 class OSystem_Chimera;
 static OSystem_Chimera *g_chimera;
 
+/* The firmware the project gave (the Roland ROMs), as ScummVM looks for it:
+ * files by name in its search path. Only the set the Music device setting
+ * names is there, so the setting alone decides which synthesizer plays
+ * (ScummVM takes the CM-32L's ROMs over the MT-32's when it has both). The
+ * files are read whole when ScummVM opens them. */
+static const char *const kMt32Roms[] = { "MT32_CONTROL.ROM", "MT32_PCM.ROM", nullptr };
+static const char *const kCm32lRoms[] = { "CM32L_CONTROL.ROM", "CM32L_PCM.ROM", nullptr };
+
+class ChimeraRomArchive final : public Common::Archive {
+public:
+	explicit ChimeraRomArchive(const char *const *names) {
+		for (int i = 0; names && names[i]; i++) {
+			struct stat st;
+			if (stat(names[i], &st) == 0)
+				_names.push_back(names[i]);
+		}
+	}
+	bool empty() const { return _names.empty(); }
+	bool hasFile(const Common::Path &path) const override { return find(path) >= 0; }
+	int listMembers(Common::ArchiveMemberList &list) const override {
+		for (const Common::String &n : _names)
+			list.push_back(Common::ArchiveMemberPtr(new Common::GenericArchiveMember(n, *this)));
+		return (int)_names.size();
+	}
+	const Common::ArchiveMemberPtr getMember(const Common::Path &path) const override {
+		const int i = find(path);
+		return i < 0 ? Common::ArchiveMemberPtr() : Common::ArchiveMemberPtr(new Common::GenericArchiveMember(_names[i], *this));
+	}
+	Common::SeekableReadStream *createReadStreamForMember(const Common::Path &path) const override {
+		const int i = find(path);
+		if (i < 0)
+			return nullptr;
+		FILE *f = fopen(_names[i].c_str(), "rb");
+		if (!f)
+			return nullptr;
+		fseek(f, 0, SEEK_END);
+		const long size = ftell(f);
+		fseek(f, 0, SEEK_SET);
+		byte *data = (byte *)malloc(size > 0 ? size : 1);
+		const size_t got = size > 0 ? fread(data, 1, (size_t)size, f) : 0;
+		fclose(f);
+		return new Common::MemoryReadStream(data, (uint32)got, DisposeAfterUse::YES);
+	}
+
+private:
+	int find(const Common::Path &path) const {
+		const Common::String name = path.baseName();
+		for (uint i = 0; i < _names.size(); i++)
+			if (_names[i].equalsIgnoreCase(name))
+				return (int)i;
+		return -1;
+	}
+	Common::StringArray _names;
+};
+static const char *const *g_roms;
+
 #ifndef CHIMERA_GUEST
 /* The virtual-time test's control, in the native reference only: with it
  * the clock ScummVM reads is the computer's (milliseconds since Init), and
@@ -180,6 +236,11 @@ public:
 			chimera_engine_data, (uint32)(chimera_engine_data_end - chimera_engine_data)));
 		if (data)
 			s.add("chimera-data", data, priority);
+		ChimeraRomArchive *roms = new ChimeraRomArchive(g_roms);
+		if (roms->empty())
+			delete roms;
+		else
+			s.add("chimera-firmware", roms, priority + 1);
 	}
 	Common::SeekableReadStream *createConfigReadStream() override { return nullptr; }
 	Common::WriteStream *createConfigWriteStream() override { return nullptr; }
@@ -521,6 +582,14 @@ int scvm_init(char *err, int errsz) {
 	setting("musicDriver", music, sizeof music, "auto");
 	setting("oplEmulator", opl, sizeof opl, "auto");
 	setting("subtitles", subs, sizeof subs, "true");
+	g_roms = !strcmp(music, "mt32") ? kMt32Roms : !strcmp(music, "cm32l") ? kCm32lRoms : nullptr;
+	for (int i = 0; g_roms && g_roms[i]; i++) {
+		struct stat st;
+		if (stat(g_roms[i], &st) != 0) {
+			snprintf(err, errsz, "%s", chimeraText1("error.rom_missing", g_roms[i]).c_str());
+			return 0;
+		}
+	}
 	snprintf(args[0], sizeof args[0], "--music-driver=%s", strcmp(music, "cm32l") ? music : "mt32");
 	snprintf(args[1], sizeof args[1], "--opl-driver=%s", opl);
 	snprintf(args[2], sizeof args[2], "%s", strcmp(subs, "false") ? "--subtitles" : "--no-subtitles");

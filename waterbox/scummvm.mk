@@ -61,10 +61,10 @@ SVM_EPOCH := $(shell git -C $(SVM_SRC) log -1 --format=%ct)
 # the core's C++ sees the machine's headers: emulibc (miniBox's in the
 # guest, native-shim's natively), the settings and slots readers
 CORE_INCS := -I$(ROOT)/waterbox/backend -I$(ROOT)/waterbox $(EMULIBC_INC) -I$(MB)/source/guest/include -I$(MB)/extern/jsmn
-$(SVM)/objs.txt: $(SVM)/config.mk scummvm-objs.mk $(PATCH_STAMP) FORCE
+$(SVM)/link.stamp: $(SVM)/config.mk scummvm-objs.mk $(PATCH_STAMP) FORCE
 	+SOURCE_DATE_EPOCH=$(SVM_EPOCH) $(MAKE) -C $(SVM) -f Makefile -f $(ROOT)/waterbox/scummvm-objs.mk chimera-objs \
 		CHIMERA_DIR=$(ROOT)/waterbox CHIMERA_INCS="$(CORE_INCS)"
 
-scummvm: $(SVM)/objs.txt
+scummvm: $(SVM)/link.stamp
 .PHONY: scummvm FORCE
 FORCE:

@@ -7,6 +7,7 @@
 #   objs.txt       ScummVM's objects and libraries, in its own link order
 #   libs.txt       the libraries configure found (deps.mk's)
 #   core-objs.txt  the core's objects
+#   link.stamp     touched when any of those objects changed
 #   datafiles.txt  ScummVM's data files for the engines built (each .dat,
 #                  the fonts, the GUI's themes and translations), which the
 #                  core carries in its memory
@@ -26,7 +27,12 @@ chimera/%.o: $(CHIMERA_DIR)/%.cpp
 
 -include $(wildcard chimera/*/$(DEPDIR)/*.d chimera/$(DEPDIR)/*.d)
 
-chimera-objs: $(CHIMERA_OBJS) $(CORE_OBJS)
+# link.stamp is newer than the core's link whenever an object it links is:
+# what the link rules (core.mk) depend on
+link.stamp: $(CHIMERA_OBJS) $(CORE_OBJS)
+	@touch $@
+
+chimera-objs: link.stamp
 	@printf '%s\n' $(CHIMERA_OBJS) > objs.txt.new
 	@printf '%s\n' $(LIBS) > libs.txt.new
 	@printf '%s\n' $(CORE_OBJS) > core-objs.txt.new
