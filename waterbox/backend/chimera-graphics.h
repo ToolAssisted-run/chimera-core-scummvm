@@ -12,6 +12,10 @@
  *
  * The overlay is the size of the game screen (at least 320x200), so a click
  * names the same place whichever is shown.
+ *
+ * A 3D engine (initGraphics3d) draws with OpenGL instead (chimera-gl.h): the
+ * game screen is then what OpenGL drew, read when the engine shows it, and
+ * the rest (the overlay, the pointer) is as for any other game.
  */
 #ifndef CHIMERA_GRAPHICS_H
 #define CHIMERA_GRAPHICS_H
@@ -32,7 +36,8 @@ public:
 	Common::List<Graphics::PixelFormat> getSupportedFormats() const override;
 	void initSize(uint width, uint height, const Graphics::PixelFormat *format = nullptr) override;
 	int getScreenChangeID() const override { return _screenChangeID; }
-	void beginGFXTransaction() override {}
+	bool setGraphicsMode(int mode, uint flags) override;
+	void beginGFXTransaction() override { _pending3d = false; }
 	OSystem::TransactionError endGFXTransaction() override { return OSystem::kTransactionSuccess; }
 	int16 getHeight() const override { return _game.h; }
 	int16 getWidth() const override { return _game.w; }
@@ -87,6 +92,8 @@ private:
 	byte _cursorPalette[256 * 3];
 	bool _cursorPaletteEnabled = false;
 	bool _overlayVisible = false, _overlayInGUI = false;
+	bool _pending3d = false;   // the graphics transaction asked for OpenGL
+	bool _render3d = false;    // the game draws with OpenGL
 	bool _cursorVisible = false;
 	int _cursorHotX = 0, _cursorHotY = 0;
 	uint32 _cursorKey = 0;

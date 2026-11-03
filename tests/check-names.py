@@ -34,7 +34,8 @@ folder = sys.argv[1] if len(sys.argv) > 1 else os.path.join(here, "..", "waterbo
 NAMES = ["Chimera", "TAStudio", "GitHub", "Lua", "Windows", "Linux", "macOS", "OpenGL", "Vulkan", "Direct3D", "SQLite",
          "Sublime Text", "miniBox", "ffmpeg", "Qt", "Wayland",
          "ScummVM", "AdLib", "Roland", "MT-32", "CM-32L", "IBM PCjr", "IBM", "PCjr", "Creative Music System",
-         "MAME", "DOSBox", "Nuked", "OPL", "Deflate"]
+         "MAME", "DOSBox", "Nuked", "OPL", "Deflate", "TinyGL", "Mesa", "softpipe", "Grim Fandango", "Myst III",
+         "The Longest Journey", "Syberia", "Penumbra", "The Colony", "Thimbleweed Park"]
 LATIN = "A-Za-z\u00c0-\u024f"
 # an ending joined by a hyphen, colon or apostrophe: at most four letters and
 # the word ends there ("-ben", ":ssa", "-n", "'in"), or an apostrophe alone (a

@@ -28,6 +28,8 @@
  *   into the events a real keyboard and mouse would have sent, at the start
  *   of the frame. A frame in which ScummVM did not ask for events is a lag
  *   frame.
+ * - The picture: what the engine shows (chimera-graphics.h); a 3D engine
+ *   draws with the OpenGL linked into the core (chimera-gl.h).
  * - Files: the game's folder is the zip the project gave (chimera-fs.h);
  *   saved games live in the machine's memory (chimera-saves.h); ScummVM's
  *   own data files (each engine's .dat, the fonts, the GUI's themes and
@@ -69,6 +71,7 @@
 #include "common/textconsole.h"
 
 #include "chimera-fs.h"
+#include "chimera-gl.h"
 #include "chimera-graphics.h"
 #include "chimera-machine.h"
 #include "chimera-saves.h"
@@ -245,6 +248,8 @@ public:
 	Common::SeekableReadStream *createConfigReadStream() override { return nullptr; }
 	Common::WriteStream *createConfigWriteStream() override { return nullptr; }
 	Common::String getSystemLanguage() const override { return "en_US"; }
+	OpenGL::ContextType getOpenGLType() const override { return OpenGL::kContextGL; }
+	void *getOpenGLProcAddress(const char *name) const override { return chimeraGlProcAddress(name); }
 	void engineInit() override { g_engineStarted = true; }
 
 	Common::HardwareInputSet *getHardwareInputSet() override {
@@ -578,10 +583,18 @@ int scvm_init(char *err, int errsz) {
 	}
 
 	// the settings, as ScummVM's command line takes them
-	static char music[64], opl[64], subs[16], args[4][96];
+	static char music[64], opl[64], subs[16], renderer[32], args[4][96];
 	setting("musicDriver", music, sizeof music, "auto");
 	setting("oplEmulator", opl, sizeof opl, "auto");
 	setting("subtitles", subs, sizeof subs, "true");
+	setting("renderer", renderer, sizeof renderer, "software");
+	// The 3D renderer: "software" is ScummVM's TinyGL for every engine that
+	// has it (OpenGL is not offered to them); "opengl" and "opengl_shaders"
+	// offer the core's OpenGL and ask for that renderer by ScummVM's own
+	// name for it. Engines that draw only with OpenGL have it either way.
+	const bool gl = strcmp(renderer, "software") != 0;
+	chimeraGlSetOffered(gl);
+	snprintf(args[3], sizeof args[3], "--renderer=%s", renderer);
 	g_roms = !strcmp(music, "mt32") ? kMt32Roms : !strcmp(music, "cm32l") ? kCm32lRoms : nullptr;
 	for (int i = 0; g_roms && g_roms[i]; i++) {
 		struct stat st;
@@ -599,6 +612,8 @@ int scvm_init(char *err, int errsz) {
 	g_argv[g_argc++] = args[0];
 	g_argv[g_argc++] = args[1];
 	g_argv[g_argc++] = args[2];
+	if (gl)
+		g_argv[g_argc++] = args[3];
 	g_argv[g_argc++] = "--auto-detect";
 	g_argv[g_argc] = nullptr;
 

@@ -33,6 +33,8 @@ SVM_LDFLAGS := -static -no-pie
 SVM_HOST := --host=x86_64-linux-musl
 EMULIBC_INC := -I$(abspath $(MB))/extern/emulibc
 CORE_C_EXTRA := $(WBFLAGS)
+MESA_BUILD := build-guest2
+MESA_SETUP := -m <miniBox>
 include common.mk
 
 $(SR)/lib/libstdc++.a:
@@ -41,12 +43,18 @@ $(SR)/lib/libstdc++.a:
 	@false
 
 # the guest kit's link recipe (the DOSBox-X core's): the large code model's
-# --no-relax, the weak pthread pulls libgcc_eh needs, cxxglue for the unwinder
+# --no-relax, the weak pthread pulls libgcc_eh needs, cxxglue for the
+# unwinder; Mesa declares some pthread entry points weak too, which linked
+# statically would be zero, so each is pulled in (the RSDK v4 core's list).
+# Mesa's thread-local variables give the image a TLS segment, which miniBox
+# gives the guest's own %fs (check-wbx.sh says so).
 $(B)/core.wbx: $(SVM)/link.stamp $(CORE_C_OBJS) $(B)/core/data.o | $(SR)/lib/libstdc++.a
+	$(MESA_CHECK)
 	$(CXX) -static -no-pie -Wl,--eh-frame-hdr -Wl,-O2 -Wl,--no-relax -Wl,--strip-debug -Wl,-z,stack-size=8388608 \
 		-T $(MB)/source/guest/linkscript.T \
+		-Wl,-u,pthread_mutexattr_init -Wl,-u,pthread_mutexattr_settype -Wl,-u,pthread_mutexattr_destroy \
 		-Wl,-u,pthread_once -Wl,-u,pthread_cond_wait -Wl,-u,pthread_cond_broadcast -Wl,-u,pthread_key_create \
-		-o $@.tmp $(CORE_C_OBJS) $(B)/core/data.o $(SVM_LINK) \
+		-o $@.tmp $(CORE_C_OBJS) $(B)/core/data.o $(SVM_LINK) $(MESA_LINK) \
 		$(MBUILD)/source/guest/cxxglue.c.o $(MBUILD)/source/guest/emulibc.c.o $(SAME_WRAP_FLAGS) \
 		-L$(SR)/lib -lstdc++ -lm -lgcc -lgcc_eh -lc
 	sh $(MB)/source/guest/check-wbx.sh $@.tmp

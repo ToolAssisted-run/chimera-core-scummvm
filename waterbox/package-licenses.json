@@ -2,7 +2,7 @@
   "package": "scummvm",
   "effectiveTerms": "GPL-3.0-or-later",
   "commercialUse": "allowed",
-  "note": "The built core combines this repository's code (MIT): the backend, the exports and the build in waterbox/; the patches in patches/ (GPL-3.0-or-later, as ScummVM); ScummVM (GPL-3.0-or-later, with the parts under the other free licences ScummVM lists in its LICENSES folder), compiled from the submodule extern/scummvm with the patches applied, together with ScummVM's data files for its engines, fonts and GUI themes; and the libraries ScummVM is built with, compiled from the submodule extern/libretro-deps, each under its own licence. The whole is distributed under the GPL-3.0-or-later. The package carries no game: the user opens their own, as a zip of its folder. The corresponding source of each part is linked below by exact commit.",
+  "note": "The built core combines this repository's code (MIT): the backend, the exports and the build in waterbox/; the patches in patches/ (GPL-3.0-or-later, as ScummVM); ScummVM (GPL-3.0-or-later, with the parts under the other free licences ScummVM lists in its LICENSES folder), compiled from the submodule extern/scummvm with the patches applied, together with ScummVM's data files for its engines, fonts and GUI themes; the libraries ScummVM is built with, compiled from the submodule extern/libretro-deps, each under its own licence; and Mesa (MIT), the OpenGL the 3D engines draw with, compiled from its release tarball. The whole is distributed under the GPL-3.0-or-later. The package carries no game: the user opens their own, as a zip of its folder. The corresponding source of each part is linked below by exact commit.",
   "components": [
     {
       "name": "chimera-core-scummvm (the backend, the exports and the build)",
@@ -235,6 +235,14 @@
       "commit": "{submodule:extern/libretro-deps}",
       "file": "extern/libretro-deps/giflib/COPYING",
       "sourceUrl": "https://github.com/libretro/libretro-deps/archive/{commit}.tar.gz"
+    },
+    {
+      "name": "Mesa (softpipe + OSMesa, the core's OpenGL)",
+      "license": "MIT",
+      "url": "https://gitlab.freedesktop.org/mesa/mesa",
+      "version": "24.0.9",
+      "file": "build/mesa/docs/license.rst",
+      "sourceUrl": "https://archive.mesa3d.org/mesa-24.0.9.tar.xz"
     }
   ]
 }

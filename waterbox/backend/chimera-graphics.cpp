@@ -5,6 +5,7 @@
 #include "common/textconsole.h"
 #include "graphics/pixelformat.h"
 
+#include "chimera-gl.h"
 #include "chimera-graphics.h"
 #include "chimera-machine.h"
 
@@ -30,9 +31,21 @@ ChimeraGraphicsManager::~ChimeraGraphicsManager() {
 	free(_lut16);
 }
 
+/* OpenGL for games: engines that can draw either way ask whether it is
+ * there (kFeatureOpenGLForGame), and it is when the renderer setting offers
+ * it; an engine that draws only with OpenGL does not ask, or asks only for
+ * shaders, and always has it */
 bool ChimeraGraphicsManager::hasFeature(OSystem::Feature f) const {
 	return f == OSystem::kFeatureCursorPalette || f == OSystem::kFeatureCursorAlpha || f == OSystem::kFeatureCursorMask ||
-	       f == OSystem::kFeatureCursorMaskInvert || f == OSystem::kFeatureCursorMaskPaletteXorColorXnor;
+	       f == OSystem::kFeatureCursorMaskInvert || f == OSystem::kFeatureCursorMaskPaletteXorColorXnor ||
+	       f == OSystem::kFeatureShadersForGame || (f == OSystem::kFeatureOpenGLForGame && chimeraGlOffered());
+}
+
+/* initGraphics3d asks for OpenGL inside its graphics transaction; any other
+ * transaction that sets a size is a 2D one */
+bool ChimeraGraphicsManager::setGraphicsMode(int mode, uint flags) {
+	_pending3d = (flags & OSystem::kGfxModeRender3d) != 0;
+	return true;
 }
 
 void ChimeraGraphicsManager::setFeatureState(OSystem::Feature f, bool enable) {
@@ -56,9 +69,13 @@ Common::List<Graphics::PixelFormat> ChimeraGraphicsManager::getSupportedFormats(
 }
 
 void ChimeraGraphicsManager::initSize(uint width, uint height, const Graphics::PixelFormat *format) {
-	const Graphics::PixelFormat f = format ? *format : Graphics::PixelFormat::createFormatCLUT8();
 	if (width == 0 || height == 0)
 		return;
+	_render3d = _pending3d;
+	// what OpenGL drew is read into the game screen, in the picture's format
+	const Graphics::PixelFormat f = _render3d ? kArgb : format ? *format : Graphics::PixelFormat::createFormatCLUT8();
+	if (_render3d && !chimeraGlScreen(width, height))
+		error("chimera: no OpenGL for a %ux%u screen", width, height);
 	if (_game.w != (int)width || _game.h != (int)height || _game.format != f) {
 		_game.free();
 		_game.create(width, height, f);
@@ -179,6 +196,8 @@ static void copySurface(Graphics::Surface &dst, const Graphics::Surface &src) {
 }
 
 void ChimeraGraphicsManager::updateScreen() {
+	if (_render3d)
+		chimeraGlRead(_game);
 	copySurface(_shot.game, _game);
 	for (int i = 0; i < 256; i++)
 		_shot.palette[i] = argbOf(_palette + i * 3);

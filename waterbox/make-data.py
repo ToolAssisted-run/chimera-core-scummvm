@@ -3,7 +3,9 @@
 
 The files are the ones ScummVM's own Makefile installs for the engines this
 build has (scummvm-objs.mk writes the list): each engine's .dat, the fonts,
-the GUI's themes and translations. Stored, not compressed (ScummVM reads a
+the GUI's themes and translations, at the zip's top; the 3D engines' OpenGL
+shaders in its shaders/ folder, where ScummVM looks for them (a line of the
+list that reads "shaders/=<file>"). Stored, not compressed (ScummVM reads a
 member whole either way, and the package is compressed); in name order with
 one date, so the same files make the same bytes.
 
@@ -14,12 +16,18 @@ import sys
 import zipfile
 
 listing, out = sys.argv[1], sys.argv[2]
-files = sorted({line.strip() for line in open(listing) if line.strip()}, key=os.path.basename)
+def entry(line):
+    folder, sep, path = line.partition("=")
+    if sep and folder.endswith("/"):
+        return folder + os.path.basename(path), path
+    return os.path.basename(line), line
+
+
+files = sorted({entry(line.strip()) for line in open(listing) if line.strip()})
 names = set()
 tmp = out + ".tmp"
 with zipfile.ZipFile(tmp, "w", zipfile.ZIP_STORED) as z:
-    for path in files:
-        name = os.path.basename(path)
+    for name, path in files:
         if name in names:
             sys.exit("make-data: two data files are called %s" % name)
         names.add(name)

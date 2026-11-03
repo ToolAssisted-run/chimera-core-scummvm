@@ -37,11 +37,22 @@ collideMove when leaving fast area").
 
 1. **The mouse is two absolute axes, 0 to 65535** (neutral 32768) across
    and down the screen shown, as in the DOSBox-X and PCem cores.
-2. **colony and twp go through the GPU bridge**, after the software
-   engines: the core is built first without them, then they are added the
-   way the other OpenGL cores do it. What is checked on a real card is
-   checked on the GTX 1060 Windows computer, and what was seen only through
-   a software GL is said to be so.
+2. **The Colony and Thimbleweed Park** (the two engines that draw only
+   through OpenGL). First answer: through the GPU bridge, after the
+   software engines, the way the other OpenGL cores do it. Asked again,
+   because Chimera's rule is that a GPU renderer is never a core's only
+   one, and because Thimbleweed Park keeps its textures only on the card (a
+   state loaded in another session would come back without them), the
+   owner chose instead:
+   **Mesa's softpipe built into the core**, as the PCSX2, Flycast and Ruffle
+   cores do, so these games draw the same picture everywhere, savestates
+   hold all of it and no graphics card is needed; then, as a second step,
+   **the GPU bridge as an optional "Hardware (OpenGL)" renderer** for speed,
+   as PCSX2 has it. What is checked on a real card is checked on the GTX
+   1060 Windows computer, and what was seen only through a software OpenGL
+   is said to be so. Then, told what the bridge would take for ScummVM
+   (below), the owner chose to **stop at the softpipe for now** and keep
+   the bridge as a later project.
 3. **A game is given as a zip of its folder.**
 4. **The repository stays local** (no remote, nothing public) until the
    owner says.
@@ -53,8 +64,9 @@ collideMove when leaving fast area").
   never written to). It is configured for its "null" backend (no window, no
   sound device, no host devices) with every optional library pointed at
   the core's own builds of them and every host feature off (ALSA, MIDI
-  ports, network, text to speech, the processor's SSE2 and AVX2 code,
-  OpenGL). Everything ScummVM would link into its program but the null
+  ports, network, text to speech, the processor's SSE2 and AVX2 code).
+  OpenGL is the core's own (see "OpenGL in the core" below). Everything
+  ScummVM would link into its program but the null
   backend is linked into the core. The guest build is configured as a cross
   build (`--host=x86_64-linux-musl`): configured as a native one, configure
   runs its test programs, which only run in the sandbox, decides the guest
@@ -83,9 +95,10 @@ collideMove when leaving fast area").
   0001 has ScummVM call the core instead (under CHIMERA_BACKEND, which only
   the core's build of base/main.cpp defines).
 - **ScummVM's data files** (each engine's .dat, the fonts, the GUI's
-  themes and translations; 46 files, 81 MB, the list ScummVM's own Makefile
-  installs for the engines built) are one zip built into core.wbx
-  (data.S), read from the core's memory.
+  themes and translations, and the 3D engines' OpenGL shaders in a
+  shaders/ folder; the list ScummVM's own Makefile installs for the engines
+  built) are one zip built into core.wbx (data.S), read from the core's
+  memory.
 - **The same in both builds.** The native reference links the sandbox's
   own math functions (make-native-libm.sh, from the OpenBOR core), and both
   builds answer qsort, bsearch, rand and srand with the core's own
@@ -190,7 +203,9 @@ What it found while it was being written, each fixed:
 
 Measured on an Intel Core Ultra 7 265KF, 2026-11-03: 39 passed, 0 failed,
 0 skipped (with the freeware games, the owner's MT-32 ROMs and the owner's
-King's Quest II; without them their tests say SKIP).
+King's Quest II; without them their tests say SKIP). With the 3D tests
+(see "OpenGL in the core") and the core linking Mesa, the same day: 52
+passed, 0 failed, 0 skipped, every test above as before.
 
 - native = sandbox: testbed's pixel formats (1600 frames, every picture,
   the sound, the lag, testbed's reports), its save file and file tests;
@@ -219,7 +234,8 @@ King's Quest II; without them their tests say SKIP).
 - refusals: no game, not a zip, a zip of no game ScummVM knows, a member
   compressed with bzip2, a save zip that is not a zip, the MT-32 without
   its ROMs: each refused at Init with its key.
-- texts: Chimera's tools/check-core-texts.py (44 keys, each named) and
+- texts: Chimera's tools/check-core-texts.py (44 keys, each named; 49
+  with the renderer setting's) and
   tests/check-names.py (26 tables, no name bent).
 - Chimera's contract tests (test-packages, Chimera 08ee9de1): every one
   passes. The frontend tests (tests/run-frontend.sh, Chimera 08ee9de1, its
@@ -278,6 +294,148 @@ files). The package is 120 MB.
   a search of it in runs (ReadBus) takes 0.4 s to start, against 35 s a
   byte a call; every candidate reads what PeekBus reads.
 
+## OpenGL in the core: Mesa's softpipe (2026-11-03)
+
+The owner's decision 2 (above). What was built:
+
+- **Mesa 24.0.9**, softpipe behind OSMesa, static, without LLVM: the RSDK v4
+  core's `setup-mesa.sh` (itself the touchHLE and PCSX2 cores'), the same
+  release, checksum and options, built twice from one tarball, for the
+  guest and for this computer. The native reference links the same Mesa,
+  because a game can ask OpenGL questions and act on the answers, and reads
+  its own pictures back (The Colony keeps the screen behind its message
+  windows that way, Thimbleweed Park makes its saved games' thumbnails):
+  OpenGL is part of the machine. Mesa's own zlib is left
+  out of the link (ScummVM's serves both); its expat is not pulled in.
+- **ScummVM's configure** gives OpenGL only to backends it knows (SDL,
+  Android and a few more). Patch 0002 lets the null backend have desktop
+  OpenGL through GLAD when asked with `--opengl-mode=gl`; without that
+  option nothing changes. GLAD loads every function through
+  `OSystem::getOpenGLProcAddress`, which the core answers from OSMesa.
+- **The engines this adds**: The Colony and Thimbleweed Park (OpenGL only),
+  Penumbra (hpl1: its build asks for OpenGL with shaders although it can
+  draw with TinyGL, so it had been left out silently), and ScummVM's 3D test
+  engine, Playground 3D, for the tests. Their shaders are in the data zip,
+  in the shaders/ folder ScummVM reads them from.
+- **How a 3D engine draws** (backend/chimera-gl.cpp): `initGraphics3d` asks
+  for OpenGL inside its graphics transaction; the core then makes one OSMesa
+  context (24-bit depth, 8-bit stencil, the compatibility profile, which
+  has both the fixed-function calls and the shaders) on a buffer the size of
+  the game's screen, the first row the top. The engine draws; when it shows
+  its picture (`updateScreen`), the core finishes the drawing (glFinish:
+  OSMesa then copies what was drawn into the buffer) and reads the buffer
+  as the game's screen. The overlay (ScummVM's menus) and the pointer are
+  drawn over it as for any game. Everything OpenGL holds is in the
+  machine's memory, so a savestate holds it all.
+- **The renderer setting** is ScummVM's own Game 3D Renderer choice:
+  Software (TinyGL, the default, which these engines used before), OpenGL,
+  OpenGL with shaders. With Software, OpenGL is not offered to engines that
+  can draw either way (`kFeatureOpenGLForGame` is false), so each takes
+  TinyGL; The Colony and Thimbleweed Park do not ask and always get the
+  core's OpenGL (The Colony its fixed-function renderer, its own default;
+  Thimbleweed Park its shaders). With the other two, OpenGL is offered and
+  ScummVM is started with `--renderer=opengl` or `opengl_shaders`; an engine
+  without the one asked for takes the nearest it has, by ScummVM's own rule.
+- **The image has thread-local storage now.** Mesa keeps its current
+  context in thread locals, so core.wbx has a TLS segment and its own `%fs`,
+  which miniBox gives it, as for every core that links Mesa (check-wbx says
+  so and passes). On Windows this is the path that once crashed PCSX2's
+  softpipe after about a thousand frames (Windows does not keep a program's
+  `%fs` across a thread switch); miniBox has repaired it since 2026-09-12.
+  Not tried on Windows for this core.
+
+Tested with Playground 3D (tests/make-playground3d.py makes its one file):
+its six scenes (a turning cube, depth offsets, a fade, a moving viewport,
+textures in five pixel formats, a quad strip and a triangle), a click
+apiece, through each renderer:
+
+- native = sandbox, every picture, 720 frames, each renderer.
+- the engine says which renderer it made ("Initializing Software 3D
+  Renderer", "OpenGL Renderer", "OpenGL Renderer with shaders"), in both
+  builds, and the three draw three different runs of pictures.
+- where the scenes are drawn: scene 1 on its grey, scene 3 on red, scene 5's
+  first texture top left in red, green and blue bars, scene 6's green quad
+  and its red triangle wide at the top: 9 pixels checked in each renderer's
+  pictures, all as expected.
+- savestates with OpenGL with shaders: saved and loaded before every frame
+  = straight (22.9 MB states, OpenGL's own state among them); saved
+  at frame 300, loaded into a new host = straight.
+- through Chimera (tests/run-frontend.sh, Chimera 08ee9de1): a project of
+  Playground 3D with OpenGL with shaders, played by chimera-run: the last
+  picture is the native reference's, every pixel (the frontend tests 6 of
+  6). Chimera's contract tests (test-packages) pass with this package.
+
+Each check was broken on purpose once and seen to fail:
+
+- the buffer's rows left bottom first (OSMesa's default): scene 5's
+  textures and scene 6's triangle are not where they should be (the three
+  bars read the grey behind them; the triangle's wide end is at the bottom).
+- the drawing not finished before the buffer is read: every picture black.
+- OpenGL offered with the Software setting too: the engine makes the
+  shader renderer instead of TinyGL, and the check of what it made fails.
+- the frontend's 3D check, given a project whose renderer is Software: its
+  last picture differs from the reference's on all 480 lines. (OpenGL and
+  OpenGL with shaders draw that last scene alike, so this check tells
+  TinyGL from OpenGL, not the two OpenGL renderers apart; the core's own
+  tests do that.)
+
+Speed (Intel Core Ultra 7 265KF): Playground 3D, 720 frames at 640x480:
+2.8 s natively with TinyGL, 5.2 s with OpenGL and 5.4 s with shaders; in
+the sandbox 5.0, 7.1 and 7.3 s (start included). These scenes are small;
+a real game's speed on softpipe is not known (see Not tried). core.wbx
+grew from 223 to 250 MB.
+
+**The Colony and Thimbleweed Park are built in and untried**: no copy of
+either is in the owner's folders, so neither has been started, and nothing
+here says they draw correctly or how fast.
+
+## A later project: the GPU bridge (user-decided, 2026-11-03)
+
+The owner's second step was the GPU bridge as an optional "Hardware
+(OpenGL)" renderer, for speed, as the PCSX2 core has it. Looked into before
+building it, it is a project of its own for ScummVM, not wiring, and the
+owner chose to stop at the softpipe for now and keep this as a later
+project. What it would take:
+
+1. **The core profile.** Chimera's bridge gives a core-profile context
+   (owner, 2026-10-19), which has no fixed-function OpenGL. The Colony's
+   default renderer, and every engine's plain "OpenGL" renderer (Grim's,
+   Myst III's, Playground 3D's, ...), are fixed-function: they cannot draw
+   through the bridge at all. Only the "OpenGL with shaders" renderers
+   could, and The Colony's own code calls its shader renderer not yet
+   complete.
+2. **Finding what OpenGL can do.** ScummVM reads its features from
+   `glGetString(GL_EXTENSIONS)` (graphics/opengl/context.cpp), which a core
+   profile does not answer (it gives the extensions one by one, through
+   glGetStringi). It would find no framebuffer objects, and Thimbleweed
+   Park refuses to start without them. A patch to ScummVM would read them
+   the core profile's way.
+3. **A new context at every load.** Since chimera#43 every state load gives
+   a bridged core a new OpenGL context, so that objects the state's
+   engine made in another context are never reached. A bridged core must
+   then make its objects again. PCSX2, Dolphin and the others have a
+   renderer that can rebuild from the machine's memory; ScummVM's engines
+   make their textures, shaders, buffers and OpenGL settings once and never
+   again, so after any rewind the picture would be missing them. The core
+   would need a layer between the engines and the bridge that records
+   every object (each texture's pixels, each buffer's bytes, each shader's
+   source and program's uniforms, framebuffers, vertex arrays, samplers)
+   and every setting in the machine's memory, copies back what the card
+   drew into textures before each state is taken, and makes all of it again
+   on a new context after a load.
+4. **What else changes.** Games that read their picture back (The Colony
+   for the screen behind its message windows, Thimbleweed Park for its
+   saved games' thumbnails) would put a driver's pixels into the machine,
+   so a movie could replay differently on another card or driver; a movie
+   made this way says a card drew it (Chimera's GpuRenderer header).
+
+Estimate: several days for 2 and 3, the layer being most of it, tested
+here only on llvmpipe (Mesa on the processor, through EGL) and for real
+on the GTX 1060 Windows computer. Whether it is worth it depends on how
+slow softpipe is for a real game, which nobody has measured: Playground
+3D's scenes run at about 100 frames a second in the sandbox at 640x480,
+and no 3D game has been tried.
+
 ## Not tried yet (2026-11-03)
 
 - **Windows.** Neither the frontend test's scenario on the Windows build
@@ -285,8 +443,12 @@ files). The package is 120 MB.
 - **A full game played through**, a CD game with speech (Beneath a Steel
   Sky's CD version, Flight of the Amazon Queen's talkie), a game with
   video (Broken Sword, Toonstruck), the high-resolution and 16/32-bit
-  engines on real games, the 3D engines' TinyGL renderer, any game of
-  over 2 GB in a zip, and a zip whose names are not UTF-8 or ASCII.
+  engines on real games, any game of over 2 GB in a zip, and a zip whose
+  names are not UTF-8 or ASCII.
+- **Any real 3D game**, on any renderer: The Colony and Thimbleweed Park
+  (no copy of either is in the owner's folders), Grim Fandango, Myst III,
+  The Longest Journey, Syberia, Penumbra. Only ScummVM's own 3D test engine
+  was drawn, so how fast softpipe draws a real game is not known.
 - **CI.** `.github/workflows/chimera.yml` is written (copied from the
   OpenBOR core's, with the freeware games fetched) and has never run: the
   repository has no remote.
@@ -297,16 +459,6 @@ files). The package is 120 MB.
 
 ## Open, for the owner (2026-11-03)
 
-- **The Colony and Thimbleweed Park** (the engines left out; "twp" is
-  Thimbleweed Park, not Return to Monkey Island, which ScummVM does not
-  run). Neither has a software renderer: Colony has two OpenGL renderers,
-  Thimbleweed Park calls OpenGL itself. The owner chose the GPU bridge;
-  asked again because Chimera's rule is that a GPU renderer is never the
-  only one, and because Thimbleweed Park keeps its textures only on the
-  card (a state loaded in another session would come back without them).
-  The alternative put: Mesa's softpipe built into the core first
-  (deterministic, savestates whole), the bridge after it as a hardware
-  renderer.
 - **The libraries' versions.** libretro-deps holds old releases (zlib
   1.2.8, libpng 1.6.25 beta, FreeType 2.x of its time); moving each to its
   current release is possible and not done.

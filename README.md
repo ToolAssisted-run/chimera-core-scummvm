@@ -13,18 +13,21 @@ file, `scummvm.chimeraCore`, that goes in Chimera's `cores` folder.
 Local only: this repository has no remote yet, and nothing is published.
 
 - ScummVM at commit a60993f5 (2026-11-03), with every engine ScummVM builds
-  by default (and its test engine) except two that draw only through OpenGL
-  (The Colony and Thimbleweed Park): how they will draw is open
-  (docs/PLAN.md).
+  by default and its two test engines. The 3D engines draw in software
+  (ScummVM's TinyGL) or with an OpenGL built into the core (Mesa's
+  softpipe), which the two engines that have only OpenGL (The Colony and
+  Thimbleweed Park) always use. No graphics card is used.
 - Tried: ScummVM's test engine (testbed), scummvm.org's freeware games
   Beneath a Steel Sky, Flight of the Amazon Queen, Lure of the Temptress,
   Drascula and DreamWeb, and King's Quest II. The sandboxed core and a
   plain native build agree on every picture and the sound; savestates land
   where the straight run does. Each was played for its first minute or so:
   no game has been played through.
-- Not tried: Windows; CD games with speech; games with video; the 3D
-  engines. See [docs/PLAN.md](docs/PLAN.md) for what was measured and what was
-  not tried.
+- Not tried: Windows; CD games with speech; games with video; any real 3D
+  game (only ScummVM's 3D test engine was drawn). The Colony and
+  Thimbleweed Park are built in and have never been started: no copy of
+  either was available. See
+  [docs/PLAN.md](docs/PLAN.md) for what was measured and what was not tried.
 
 ## What you bring
 
@@ -46,8 +49,9 @@ for it).
   Ctrl+F5 opens ScummVM's menu (save, load, options) in every game.
 - **Settings**: Music device (as the game prefers, AdLib, PC speaker, IBM
   PCjr, Creative Music System, Roland MT-32 or CM-32L, or none), AdLib
-  emulator (MAME, DOSBox or Nuked OPL), Subtitles. Each is part of the
-  machine, so a movie needs the same value.
+  emulator (MAME, DOSBox or Nuked OPL), Subtitles, 3D renderer (Software
+  (TinyGL), OpenGL, OpenGL with shaders). Each is part of the machine, so a
+  movie needs the same value.
 
 ScummVM's saved games live in the core's memory and are carried by
 savestates. Emulator > Export Save Data writes them out, and a project's
@@ -66,5 +70,5 @@ This repository's own code is MIT; the patches to ScummVM are GPL-3.0-or-later,
 as ScummVM is. The built core is distributed under the GPL-3.0-or-later.
 The libraries it is built with (zlib, libpng, libjpeg-turbo, FreeType,
 FriBidi, libogg, libvorbis, libtheora, libFLAC, libmad, FAAD2, libmpeg2,
-giflib) are each under their own licence. The package carries every licence
+giflib, Mesa) are each under their own licence. The package carries every licence
 text. See [LICENSE](LICENSE).

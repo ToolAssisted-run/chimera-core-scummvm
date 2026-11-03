@@ -1,0 +1,31 @@
+configure: the null backend may have OpenGL when it brings its own.
+
+ScummVM's configure gives OpenGL only to backends it knows to have one.
+The Chimera core is built on the null backend and links its own OpenGL
+(Mesa's softpipe, inside the sandbox), so with --opengl-mode=gl the null
+backend gets desktop OpenGL through GLAD, which loads every function
+through OSystem::getOpenGLProcAddress. Without that option nothing
+changes: the null backend has no OpenGL, as upstream.
+
+diff --git a/configure b/configure
+index 1f24e389..1a2101f6 100755
+--- a/configure
++++ b/configure
+@@ -6868,6 +6868,17 @@ if test "$_opengl_mode" != none ; then
+ 			_opengl_mode=gles2
+ 			_opengl_glad=yes
+ 			;;
++		null)
++			# A program built on the null backend that brings its own
++			# desktop OpenGL (the Chimera core links Mesa) asks for it with
++			# --opengl-mode=gl; GLAD then loads it through
++			# OSystem::getOpenGLProcAddress. Otherwise there is none.
++			if test "$_opengl_mode" = "gl" ; then
++				_opengl_glad=yes
++			else
++				_opengl_mode=none
++			fi
++			;;
+ 		*)
+ 			# On all other platforms, by default don't enable OpenGL
+ 			test "$_opengl_mode" = "auto" && _opengl_mode=none

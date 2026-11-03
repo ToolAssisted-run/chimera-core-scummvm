@@ -13,11 +13,16 @@ this repository's `docs/PLAN.md` first.
 - `extern/libretro-deps` - the libraries' sources (zlib, libpng, libjpeg,
   FreeType, FriBidi, libogg, libvorbis, libFLAC, libmad, FAAD2, libtheora,
   libmpeg2, giflib), a submodule at the commit ScummVM's libretro port pins.
-- `patches/` - numbered patches to ScummVM (0001: no launcher, no error box).
+- `patches/` - numbered patches to ScummVM (0001: no launcher, no error box;
+  0002: the null backend may have OpenGL when it brings its own).
+- Mesa 24.0.9 (`waterbox/setup-mesa.sh`, into `build/mesa`): the OpenGL the
+  3D engines draw with, softpipe behind OSMesa, built for the guest and for
+  this computer from one tarball.
 - `waterbox/` - the core:
   - `backend/` - the OSystem: `chimera-machine.cpp` (the stack, the clock,
     the timers, the sound, the input, starting ScummVM, the firmware),
-    `chimera-graphics.cpp` (the screen), `chimera-fs.cpp` (the game's folder
+    `chimera-graphics.cpp` (the screen), `chimera-gl.cpp` (the OpenGL a 3D
+    engine draws with), `chimera-fs.cpp` (the game's folder
     out of its zip), `chimera-saves.cpp` (saved games in memory),
     `coroutine.c` (ScummVM's own stack), `controls.h` (written by
     gen-config.py);
@@ -36,14 +41,17 @@ this repository's `docs/PLAN.md` first.
     by hand;
   - the harness: `gate-harness.h`, `run-native.c`, `run-wbx.c`; and
     `run-gate.sh`, `build-package.sh`.
-- `tests/` - `make-testbed.py` (the test game: ScummVM's testbed data),
-  `fetch-freeware.sh`, `run-frontend.sh` and its helpers, `check-names.py`.
+- `tests/` - `make-testbed.py` and `make-playground3d.py` (the test games:
+  ScummVM's testbed data, and its 3D test engine's one file),
+  `fetch-freeware.sh`, `run-frontend.sh` and its helpers, `check-names.py`,
+  `compare-pictures.py` and `check-pixels.py`.
 - `build/` - every output. Ignored by git.
 
 ## Commands
 
     mb=<chimera>/extern/chimera-common-minibox
     run() { systemd-run --user --scope --quiet -p MemoryMax=8G -p MemorySwapMax=0 "$@"; }
+    run waterbox/setup-mesa.sh -m $mb -j 4 && run waterbox/setup-mesa.sh -n -j 4   # Mesa, once
     run make -C waterbox -f native.mk -j4 MB=$mb       # the native reference (10 minutes the first time)
     run make -C waterbox -f guest.mk -j4 MB=$mb        # core.wbx (the same; check-wbx takes 4 minutes more)
     tests/fetch-freeware.sh <folder>                   # the freeware games the tests play
@@ -62,6 +70,9 @@ this repository's `docs/PLAN.md` first.
   the sandbox's own math functions (`make-native-libm.sh`).
 - A change to the controls is a change to `gen-config.py`; run it, and
   `write-languages.py` after any text changes (every key in 26 languages).
+- A 3D engine draws on the core's own OpenGL (Mesa, the same in both
+  builds), never on a graphics card: the picture and everything OpenGL holds
+  are machine memory, in every savestate.
 - The guest build is configured as a cross build; if `config.mk` in
   `build/guest/scummvm` names plain `g++`, the guest objects were built
   against the computer's C library (see docs/PLAN.md).

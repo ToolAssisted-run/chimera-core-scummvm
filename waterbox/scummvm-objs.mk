@@ -9,13 +9,13 @@
 #   core-objs.txt  the core's objects
 #   link.stamp     touched when any of those objects changed
 #   datafiles.txt  ScummVM's data files for the engines built (each .dat,
-#                  the fonts, the GUI's themes and translations), which the
-#                  core carries in its memory
+#                  the fonts, the GUI's themes and translations, the 3D
+#                  engines' shaders), which the core carries in its memory
 
 CHIMERA_OBJS := $(DETECT_OBJS) $(filter-out backends/platform/null/%,$(OBJS))
 
 CORE_SRCS := backend/chimera-machine.cpp backend/chimera-fs.cpp backend/chimera-graphics.cpp \
-	backend/chimera-saves.cpp wbx-entry.cpp
+	backend/chimera-gl.cpp backend/chimera-saves.cpp wbx-entry.cpp
 CORE_OBJS := $(addprefix chimera/,$(CORE_SRCS:.cpp=.o))
 
 # patches/0001 is switched on for the core's build alone
@@ -36,7 +36,8 @@ chimera-objs: link.stamp
 	@printf '%s\n' $(CHIMERA_OBJS) > objs.txt.new
 	@printf '%s\n' $(LIBS) > libs.txt.new
 	@printf '%s\n' $(CORE_OBJS) > core-objs.txt.new
-	@printf '%s\n' $(DIST_FILES_ENGINEDATA) $(DIST_FILES_ENGINEDATA_BIG) $(DIST_FILES_THEMES) > datafiles.txt.new
+	@printf '%s\n' $(DIST_FILES_ENGINEDATA) $(DIST_FILES_ENGINEDATA_BIG) $(DIST_FILES_THEMES) \
+		$(addprefix shaders/=,$(DIST_FILES_SHADERS)) > datafiles.txt.new
 	@for f in objs libs core-objs datafiles; do cmp -s $$f.txt.new $$f.txt || mv $$f.txt.new $$f.txt; rm -f $$f.txt.new; done
 
 .PHONY: chimera-objs

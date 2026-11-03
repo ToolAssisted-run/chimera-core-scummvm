@@ -3,8 +3,14 @@
 ## Requirements
 
 - Linux on x86-64, with GCC (the guest kit's compiler is the system's, over
-  miniBox's sysroot), make, Python 3, git, binutils, curl (only to fetch the
-  freeware games the tests play).
+  miniBox's sysroot), make, Python 3, git, binutils, curl (to fetch Mesa
+  once, and the freeware games the tests play).
+- For Mesa's build: meson and ninja, bison, flex, and Python's mako and
+  packaging (`sudo apt-get install meson ninja-build bison flex
+  python3-mako python3-packaging`). Without a meson that has mako,
+  `setup-mesa.sh` makes a private Python environment with them
+  (`$HOME/.cache/chimera-mesa-build-venv`, or `MESA_BUILD_VENV`), which needs
+  python3-venv.
 - A Chimera checkout beside this one, with miniBox built: its host library
   and C guest toolchain (`meson-linux`), and its C++ toolchain
   (`meson-cpp`), whose build of musl's math the native reference links:
@@ -16,8 +22,9 @@
 - For the frontend test: Chimera built (its `chimera-run` and its window,
   built by `<chimera>/tools/ci-chimera.sh`). The window runs headless and
   needs no display.
-- About 10 GB of disk for the two builds, and time: each build of ScummVM
-  is about ten minutes on four cores.
+- About 12 GB of disk for the two builds and Mesa's two, and time: each
+  build of ScummVM is about ten minutes on four cores, each of Mesa about
+  five.
 
 ## Sources
 
@@ -32,6 +39,10 @@
 - `extern/libretro-deps` is libretro's collection of library sources at
   bab7d258, the commit ScummVM's own libretro port builds its libraries
   from.
+- Mesa 24.0.9 is not a submodule: `waterbox/setup-mesa.sh` downloads
+  `https://archive.mesa3d.org/mesa-24.0.9.tar.xz` into `build/deps/`
+  (`MESA_TARBALL=<path>` uses one already on the computer; either way it is
+  checked against its SHA256) and unpacks it into `build/mesa/`.
 
 Both submodules are shallow (`shallow = true` in `.gitmodules`).
 
@@ -42,6 +53,14 @@ the memory limit the other cores' builds use:
 
     run() { systemd-run --user --scope --quiet -p MemoryMax=8G -p MemorySwapMax=0 "$@"; }
 
+0. `run ./setup-mesa.sh -m $MB -j 4` and `run ./setup-mesa.sh -n -j 4`:
+   Mesa's softpipe behind OSMesa, static, without LLVM, once for the guest
+   (`build/mesa/build-guest2`) and once for this computer
+   (`build/mesa/build-native`), from the same tarball with the same options
+   (the RSDK v4 core's script). Its last step, a shared library, fails for
+   the guest; that is expected, and the script checks for what the core
+   links instead (the static archives and the OSMesa target's object). A
+   second run says `mesa: already built` and stops.
 1. `run make -f native.mk -j4 MB=$MB`: the native reference,
    `build/native/run-native` (the libraries, ScummVM and the core compiled
    for this computer, with the sandbox's own math functions, made by
@@ -55,9 +74,9 @@ the memory limit the other cores' builds use:
 Each build does, in order: the libraries (`deps.mk`, into
 `build/<build>/deps`), ScummVM's configure and Makefile (`scummvm.mk`,
 in `build/<build>/scummvm`; `scummvm-objs.mk` adds the core's own C++ to
-ScummVM's make and lists what to link), ScummVM's data files as one zip
-(`make-data.py`, `build/engine-data.zip`), and the link (`core.mk`,
-`native.mk`, `guest.mk`).
+ScummVM's make and lists what to link), ScummVM's data files and the 3D
+engines' shaders as one zip (`make-data.py`, `build/engine-data.zip`), and
+the link with Mesa (`core.mk`, `native.mk`, `guest.mk`).
 
 ## The tests
 
@@ -106,6 +125,11 @@ written as they are.
   guest.mk passes); `build/guest/scummvm/config.mk` must name the guest
   compiler (`CXX := g++ -specs ...`). Delete `build/guest/scummvm` and build
   again.
-- check-wbx takes about four minutes: it reads the whole 223 MB core.
+- `no Mesa at .../build/mesa/...`: step 0 was not run for that build.
+- check-wbx says the core "declares PT_TLS": that is expected. Mesa keeps
+  its current context in thread-local variables, and miniBox gives a guest
+  with thread-local storage its own `%fs` (the other cores that link Mesa
+  are the same).
+- check-wbx takes about four minutes: it reads the whole core.
 - A change to the core's C++ is compiled by ScummVM's own make; the link
   follows `build/<build>/scummvm/link.stamp`.

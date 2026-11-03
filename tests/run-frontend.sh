@@ -5,7 +5,9 @@
 #
 # - chimera-run (the engine, no window): a movie made into a project by
 #   chimera-run, and the same movie in a hand-written project. The last
-#   picture must be the native reference's (run-native) at that frame.
+#   picture must be the native reference's (run-native) at that frame. And
+#   a project of ScummVM's 3D test engine (tests/make-playground3d.py) drawn
+#   with the core's OpenGL: its last picture the reference's too.
 # - Chimera's window, run headless (no display needed): the same project
 #   opened and played through Lua, its last picture compared with the
 #   reference's; and the package's bindings becoming Chimera's defaults.
@@ -121,6 +123,29 @@ else
 		report "engine:project" PASS "the same movie in a hand-written project, the zip in its slot: the same last picture"
 	else
 		report "engine:project" FAIL "$(grep -m1 detail= "$work/proj.meta" 2>/dev/null) $(cat "$work/proj.pic" 2>/dev/null) (build/frontend/proj.log)"
+	fi
+fi
+
+# The 3D test engine with the core's OpenGL (shaders): a click a scene, the
+# last one (a green quad and a red triangle) pictured
+if [ -x "$crun" ]; then
+	mkdir -p "$work/native3d" "$work/proj3d"
+	python3 "$here/make-playground3d.py" "$work/proj3d/playground3d.zip"
+	cp "$work/proj3d/playground3d.zip" "$work/native3d/"
+	printf '{"game":["playground3d.zip"]}' > "$work/native3d/slots"
+	printf '{"renderer":"opengl_shaders"}' > "$work/native3d/settings"
+	p3=(); r3=()
+	for k in 1 2 3 4 5; do p3+=("press=Mouse Left Button:$((k * 120)):3"); r3+=(--press "$((k * 120)):MouseLeftButton:3"); done
+	"$rn" "$work/native3d" --frames 720 "${r3[@]}" --screenshot "719:$work/native3d.last.tga" > "$work/native3d.txt" 2> "$work/native3d.err"
+	python3 "$here/make-project.py" "$pkg" "$work/proj3d/pg.chimeraProject" 720 renderer='"opengl_shaders"' "${p3[@]}" \
+		-- "game=$work/proj3d/playground3d.zip"
+	( cd "$work" && timeout 900 "$crun" --project "$work/proj3d/pg.chimeraProject" "$pkg" --files "$work/proj3d" --frames 720 \
+		--screenshot "719=$work/proj3d.last.tga" --meta "$work/proj3d.meta" > "$work/proj3d.log" 2>&1 )
+	if grep -q '^status=OK' "$work/proj3d.meta" 2>/dev/null &&
+	   python3 "$here/compare-pictures.py" "$work/native3d.last.tga" "$work/proj3d.last.tga" > "$work/proj3d.pic" 2>&1; then
+		report "engine:3d" PASS "Playground 3D, OpenGL with shaders, 720 frames and five clicks in a project: the last picture is the reference's, $(cat "$work/proj3d.pic")"
+	else
+		report "engine:3d" FAIL "$(grep -m1 detail= "$work/proj3d.meta" 2>/dev/null) $(cat "$work/proj3d.pic" 2>/dev/null) (build/frontend/proj3d.log)"
 	fi
 fi
 

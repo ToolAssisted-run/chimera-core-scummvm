@@ -32,6 +32,17 @@ $(B)/core/data.o: data.S $(DATA_ZIP) $(B)/core/flags
 # listed them (read when the link runs: they exist only after ScummVM's make)
 SVM_LINK = $$(sed 's\#^\#$(SVM)/\#' $(SVM)/core-objs.txt) -Wl,--start-group $$(sed 's\#^\#$(SVM)/\#' $(SVM)/objs.txt) -Wl,--end-group $$(cat $(SVM)/libs.txt)
 
+# Mesa (setup-mesa.sh; MESA_BUILD is the flavour's folder of it): its
+# archives refer to each other both ways, so they are linked in a group,
+# with the osmesa target's own object beside them (the shared library it
+# belongs to cannot be linked for a guest). Mesa's own copy of zlib is left
+# out: deps.mk's, which ScummVM uses, serves both.
+MESA_DIR := $(ROOT)/build/mesa/$(MESA_BUILD)
+MESA_TARGET = $(shell find $(MESA_DIR)/src/gallium/targets/osmesa -name target.c.o 2>/dev/null | head -1)
+MESA_LIBS = $(shell find $(MESA_DIR) -name '*.a' ! -path '*/subprojects/zlib*' 2>/dev/null | sort)
+MESA_LINK = $(MESA_TARGET) -Wl,--start-group $(MESA_LIBS) $(DEPS)/lib/libz.a -Wl,--end-group
+MESA_CHECK = @[ -n "$(MESA_TARGET)" ] || { echo "no Mesa at $(MESA_DIR): run waterbox/setup-mesa.sh ($(MESA_SETUP))" >&2; false; }
+
 .PHONY: all clean deps scummvm
 clean:
 	rm -rf $(B)

@@ -37,6 +37,13 @@
 #                     Queen (ScummVM seeds its random numbers from the date),
 #                     native and sandbox the same
 #   savedata:import   a project's save data zip is in the machine from frame 0
+#   3d:<renderer>     Playground 3D (ScummVM's test of its 3D renderers)
+#                     through each value of the renderer setting (TinyGL, and
+#                     the core's OpenGL with and without shaders): native =
+#                     sandbox, and its scenes where and in the colours they
+#                     should be
+#   3d:setting        each renderer draws its own pictures
+#   3d:rerecord, 3d:session  the same with OpenGL's state in the savestate
 #   <game>            each freeware game, from power-on through its intro with
 #                     keys and clicks: native = sandbox
 #   kq2               King's Quest II (the owner's): the intro, Enter, a word
@@ -240,6 +247,62 @@ if grep -q "Executing Test: pixelFormatsSupported" "$work/early.err" && ! grep -
 else
 	fail "input:click: the click did not start the tests, or they started without it"
 fi
+
+# ---------------------------------------------------------------- 3D
+# Playground 3D, ScummVM's test of its 3D renderers, through each of the
+# core's (the renderer setting): a click moves to the next of its six scenes,
+# one every 120 frames, and each is pictured just before the next click.
+# The scenes are drawn in normalized coordinates on a 640x480 screen, so
+# where they land is known: a picture upside down, with red and blue
+# swapped, or not read from OpenGL at all fails the checks.
+pg="$work/playground3d.zip"
+python3 "$root/tests/make-playground3d.py" "$pg"
+pgmoves=()
+for k in 1 2 3 4 5; do pgmoves+=(--press "$((k * 120)):MouseLeftButton:3"); done
+# scene 1 on its grey (0.5), scene 3 on red, scene 6 on dark grey (0.25);
+# scene 5's first texture, top left, in bars of red, green and blue; scene
+# 6's green quad and its red triangle, wide at the top, its point below
+pgcheck=(1 "5,5=808080~1"
+	3 "5,5=FF0000~1"
+	5 "16,24=FF0000~8 48,24=00FF00~8 80,24=0000FF~8"
+	6 "5,5=404040~1 160,120=00BF33~2 345,216=FF0000~2 345,264=00BF33~2")
+echo "== 3D: Playground 3D through each renderer (720 frames)"
+for r in software opengl opengl_shaders; do
+	mkwork "pg-$r" "$pg" "{\"renderer\":\"$r\"}"
+	shots=()
+	for k in 1 2 3 4 5 6; do shots+=(--screenshot "$((k * 120 - 5)):$work/pg-$r-$k.tga"); done
+	both "pg-$r" "pg-$r" 720 "${pgmoves[@]}" "${shots[@]}"
+	same "3d:$r" "$work/pg-$r.n.txt" "$work/pg-$r.w.txt" "Playground 3D's six scenes: native = sandbox, every picture"
+	case "$r" in
+		software) says="Initializing Software 3D Renderer" ;;
+		opengl) says="Initializing OpenGL Renderer$" ;;
+		*) says="Initializing OpenGL Renderer with shaders" ;;
+	esac
+	if grep -q "^$says" "$work/pg-$r.n.err" && grep -q "^$says" "$work/pg-$r.w.err"; then
+		pass "3d:$r: the engine says which renderer it made: \"${says%$}\", in both builds"
+	else
+		fail "3d:$r: the engine did not make the renderer asked for: $(grep -h '^Initializing' "$work/pg-$r.n.err" "$work/pg-$r.w.err" | tr '\n' ' ')"
+	fi
+	bad=""
+	npx=0
+	for ((i = 0; i < ${#pgcheck[@]}; i += 2)); do
+		k="${pgcheck[$i]}"
+		npx=$((npx + $(wc -w <<< "${pgcheck[$((i + 1))]}")))
+		python3 "$root/tests/check-pixels.py" "$work/pg-$r-$k.tga" ${pgcheck[$((i + 1))]} > "$work/pg-$r-$k.chk" 2>&1 ||
+			bad="$bad scene $k: $(cat "$work/pg-$r-$k.chk");"
+	done
+	if [ -z "$bad" ]; then
+		pass "3d:$r: scenes 1, 3, 5 and 6 drawn where and in the colours they should be ($npx pixels)"
+	else
+		fail "3d:$r:$bad"
+	fi
+done
+differ 3d:setting "$work/pg-software.n.txt" "$work/pg-opengl.n.txt" "the renderer setting reaches the engine: TinyGL and OpenGL draw other pictures"
+differ 3d:setting "$work/pg-opengl.n.txt" "$work/pg-opengl_shaders.n.txt" "OpenGL and OpenGL with shaders draw other pictures"
+"$wbx" "$core" "$work/pg-opengl_shaders" --frames 720 "${pgmoves[@]}" --rerecord > "$work/pg.r.txt" 2> "$work/pg.r.err"
+same 3d:rerecord "$work/pg.r.txt" "$work/pg-opengl_shaders.w.txt" "OpenGL with shaders: save+load before every frame = straight ($(sed -n 's/stateBytes=//p' "$work/pg.r.err") state bytes, the OpenGL's state among them)"
+"$wbx" "$core" "$work/pg-opengl_shaders" --frames 720 "${pgmoves[@]}" --session-at 300 > "$work/pg.s.txt" 2> /dev/null
+same 3d:session "$work/pg.s.txt" "$work/pg-opengl_shaders.w.txt" "OpenGL with shaders: saved at frame 300 (scene 3), loaded into a new host = straight"
 
 # ---------------------------------------------------------------- refusals
 echo "== refusals"

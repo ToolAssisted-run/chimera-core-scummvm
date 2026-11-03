@@ -167,6 +167,24 @@ SETTINGS = [
      "type": "bool", "default": True,
      "description": text("setting.subtitles.about",
                           "Show the spoken lines as text, in games that have both speech and text. " + MACHINE)},
+    {"name": "renderer", "display": text("setting.renderer", "3D renderer"),
+     "type": "enum",
+     "options": ["software", "opengl", "opengl_shaders"],
+     "optionLabels": {
+         "software": text("setting.renderer.software", "Software (TinyGL)"),
+         "opengl": text("setting.renderer.opengl", "OpenGL"),
+         "opengl_shaders": text("setting.renderer.opengl_shaders", "OpenGL with shaders"),
+     },
+     "default": "software",
+     "description": text("setting.renderer.about",
+                         "How games drawn in 3D are drawn, the same choice as in ScummVM's own options. "
+                         "'Software (TinyGL)' is ScummVM's own software renderer, for every engine that has one "
+                         "(Grim Fandango, Myst III, The Longest Journey, Syberia, Penumbra and others). 'OpenGL' and "
+                         "'OpenGL with shaders' have the engines draw with their OpenGL renderers instead, on an "
+                         "OpenGL built into the core (Mesa's softpipe): the same picture on every computer, and "
+                         "slower. An engine that lacks the renderer chosen takes the nearest it has. The Colony and "
+                         "Thimbleweed Park, which have no software renderer, draw with the OpenGL in the core "
+                         "whichever is chosen. Games in 2D are not affected. " + MACHINE)},
 ]
 
 FIRMWARE = [

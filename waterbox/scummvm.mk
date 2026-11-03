@@ -10,29 +10,33 @@
 # computer's clock): scummvm-objs.mk lists them, and the core brings its own
 # OSystem (backend/).
 #
-# Engines: ScummVM's default set, plus testbed (its test engine, which the
-# tests run), less colony and twp, which draw only through OpenGL (left out
-# until the owner decides; docs/PLAN.md).
+# Engines: ScummVM's default set, plus its two test engines, which the
+# tests run: testbed and playground3d (3D drawing, through each renderer).
+#
+# OpenGL: desktop OpenGL through GLAD (patch 0002), which the core answers
+# with the Mesa it links (setup-mesa.sh, backend/chimera-gl.cpp). With it
+# come the engines that draw only through OpenGL (colony, twp) and hpl1,
+# whose build asks for OpenGL with shaders although it can draw in software.
 
 SVM_SRC := $(ROOT)/extern/scummvm
 SVM     := $(B)/scummvm
 
-SVM_ENGINES := --enable-engine=testbed --disable-engine=colony,twp
+SVM_ENGINES := --enable-engine=testbed,playground3d
 
 # The guest build is a cross build (guest.mk sets SVM_HOST): configure must
 # not try to run what the guest compiler makes, which only runs in the
 # sandbox, or it falls back to the computer's own compiler.
 
 # What ScummVM must not look for on this computer: devices, network, the
-# desktop, the processor's extensions, OpenGL, and the libraries deps.mk does
-# not build.
-SVM_OPTIONS := $(SVM_HOST) --backend=null --enable-release --disable-debug --opengl-mode=none \
+# desktop, the processor's extensions, and the libraries deps.mk does not
+# build.
+SVM_OPTIONS := $(SVM_HOST) --backend=null --enable-release --disable-debug --opengl-mode=gl \
 	--disable-alsa --disable-seq-midi --disable-sndio --disable-timidity --disable-opl2lpt --disable-retrowave \
 	--disable-nfm --disable-tremor --disable-mikmod --disable-openmpt --disable-mpcdec --disable-a52 --disable-vpx \
 	--disable-fluidsynth --disable-fluidlite --disable-sonivox --disable-readline --disable-taskbar \
 	--disable-system-dialogs --disable-sdlnet --disable-libcurl --disable-enet --disable-cloud --disable-dlc \
 	--disable-scummvmdlc --disable-updates --disable-libunity --disable-tts --disable-gtk --disable-imgui \
-	--disable-opengl-game --disable-opengl-game-classic --disable-opengl-game-shaders --disable-discord \
+	--disable-discord \
 	--disable-eventrecorder --disable-system-printing --disable-text-console --disable-ext-sse2 \
 	--disable-ext-avx2 --disable-nasm \
 	--with-zlib-prefix=$(DEPS) --with-png-prefix=$(DEPS) --with-jpeg-prefix=$(DEPS) --with-ogg-prefix=$(DEPS) \
