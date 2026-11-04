@@ -580,6 +580,19 @@ first run:
   each checked by SHA-1), fetch-deps.sh into an empty cache (all 13
   tarballs, each checked by SHA-256), Mesa's tarball address answering.
 
+The CI job replayed here (2026-11-04), step by step, in a fresh clone of
+the commit to push, with Chimera's checkout inside it as a real folder (its
+build linked from a checkout of f0cc3a1e), the freeware games fetched into
+the runner's temporary folder as the skipped step does, and every step
+under an 8 GB memory cap with four build jobs: all 8 steps passed in 38
+minutes from a cold start (Mesa built twice in 2.5 minutes; the test script
+24 minutes with the native and test builds in it, 48 passed and 2 skipped,
+King's Quest II and the MT-32 having no files on a runner; the published
+package 11 minutes with its own build; the frontend tests, the release
+checks and the contract tests under a minute). Not replayed: installing
+packages, building Chimera and Qt (done by hand at f0cc3a1e), the caches,
+and publishing.
+
 ## Not tried yet (2026-11-03)
 
 - **Windows.** Neither the frontend test's scenario on the Windows build
