@@ -593,10 +593,28 @@ checks and the contract tests under a minute). Not replayed: installing
 packages, building Chimera and Qt (done by hand at f0cc3a1e), the caches,
 and publishing.
 
+## Published (2026-11-04)
+
+The repository is ToolAssisted-run/chimera-core-scummvm. Its first CI run
+on GitHub, of 548c01d, passed in 79 minutes on a cold cache: the test
+script 48 passed, 0 failed, 2 skipped (King's Quest II and the MT-32, as
+here), the frontend test 6 of 6, the published package's checks 4 of 4,
+and Chimera's contract tests on the test package. The Mesa step's log
+shows a failed link of the guest's libOSMesa.so; that is expected (the
+guest links the archives, not that library) and the step passes. It
+published "Development build 548c01d8 (made 2026-11-04 15:07 CET)".
+
+That published package was then run on Windows (the GTX 1060 computer)
+with Chimera's published build fa499b9c, its chimera-run.exe beside the
+same build's chimera-run for Linux: Beneath a Steel Sky's project of the
+release check (Escape at frame 300, a click at 485), 1500 frames on each,
+ends on the same last picture, which is also the native reference's,
+320x200, every pixel the same. Nothing else was run on Windows.
+
 ## Not tried yet (2026-11-03)
 
-- **Windows.** Neither the frontend test's scenario on the Windows build
-  nor anything else on Windows has been run.
+- **Windows**, past the one game above: the frontend test's scenario on
+  Chimera's window for Windows, the OpenGL renderers, the MT-32, sound.
 - **A full game played through**, a CD game with speech (Beneath a Steel
   Sky's CD version, Flight of the Amazon Queen's talkie), a game with
   video (Broken Sword, Toonstruck), the high-resolution and 16/32-bit
@@ -606,9 +624,6 @@ and publishing.
   (no copy of either is in the owner's folders), Grim Fandango, Myst III,
   The Longest Journey, Syberia, Penumbra. Only ScummVM's own 3D test engine
   was drawn, so how fast softpipe draws a real game is not known.
-- **CI.** `.github/workflows/chimera.yml` is written (copied from the
-  OpenBOR core's, with the freeware games fetched) and has never run: the
-  repository has no remote.
 - **ScummVM's per-game options** (an engine's own checkboxes, such as
   testbed's "interactive mode" or SCUMM's enhancements) are not offered:
   they could become each game's own settings (GetGameSettings and

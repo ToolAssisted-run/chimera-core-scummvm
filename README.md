@@ -20,8 +20,10 @@ file, `scummvm.chimeraCore`, that goes in Chimera's `cores` folder.
 - 3D games draw with ScummVM's TinyGL or with an OpenGL built into the core
   (Mesa's softpipe), never on a graphics card. The Colony and Thimbleweed
   Park always use the core's OpenGL.
-- Not tried: Windows; CD games with speech; games with video; any real 3D
-  game (only ScummVM's 3D test engine was drawn). The Colony and
+- On Windows, Beneath a Steel Sky's first 1500 frames end on the same
+  picture as on Linux; nothing else was run there.
+- Not tried: CD games with speech; games with video; any real 3D game
+  (only ScummVM's 3D test engine was drawn, and not on Windows). The Colony and
   Thimbleweed Park have never been started: no copy of either was
   available. [docs/PLAN.md](docs/PLAN.md) has what was measured.
 
