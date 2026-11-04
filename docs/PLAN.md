@@ -55,7 +55,9 @@ collideMove when leaving fast area").
    the bridge as a later project.
 3. **A game is given as a zip of its folder.**
 4. **The repository stays local** (no remote, nothing public) until the
-   owner says. Asked again with the core done, the same: not yet.
+   owner says. Asked again with the core done, the same: not yet. Then, on
+   2026-11-04: publish it (the repository, the roster, the website and
+   issue 465 are done outside this repository's own work).
 5. **The libraries move to their current upstream releases** (zlib, libpng
    and every other one taken from libretro-deps' old copies), each pinned
    by version and the SHA-256 of its tarball (or by commit), with their
@@ -554,6 +556,30 @@ and the tests build and use a package with them:
   project's click moved to another place, the game check fails (61 of 200
   lines differ).
 
+## Ready to publish (2026-11-04)
+
+Run again against Chimera's main of the day (f0cc3a1e; the rounds above
+used 08ee9de1, and nothing between the two touches what a core declares or
+how it is run), with its own miniBox build: run-gate.sh 52 passed, 0
+failed, 0 skipped (with the freeware games, the owner's MT-32 ROMs and
+King's Quest II; 13 minutes, the builds included); the frontend tests 6 of
+6 on the test package; check-release.sh 4 of 4 on the published package;
+Chimera's contract tests pass on both.
+
+Two things a CI runner does differently, found or checked before the
+first run:
+
+- **Chimera's checkout lies inside this repository on a runner**
+  (chimera-checkout), and Chimera's text checker reads every source file
+  under the folder it is given: given this repository, it read Chimera's
+  own sources too and reported 62 problems (keys like "slot.help" in
+  Chimera's tests). run-gate.sh now gives it a copy of this repository's
+  tracked files, and .gitignore leaves chimera-checkout out.
+- **A clean runner fetches everything**: tests/fetch-freeware.sh into an
+  empty folder with nothing in its environment but PATH (all five games,
+  each checked by SHA-1), fetch-deps.sh into an empty cache (all 13
+  tarballs, each checked by SHA-256), Mesa's tarball address answering.
+
 ## Not tried yet (2026-11-03)
 
 - **Windows.** Neither the frontend test's scenario on the Windows build
@@ -577,5 +603,4 @@ and the tests build and use a package with them:
 
 ## Open, for the owner (2026-11-03)
 
-- **Publishing**: a repository, CI, the roster, the README's row. Not yet
-  (the owner, 2026-11-03).
+- **Publishing**: decided by the owner on 2026-11-04 (above).

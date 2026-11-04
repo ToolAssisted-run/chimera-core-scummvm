@@ -10,24 +10,20 @@ file, `scummvm.chimeraCore`, that goes in Chimera's `cores` folder.
 
 ## Status
 
-Local only: this repository has no remote yet, and nothing is published.
-
 - ScummVM at commit a60993f5 (2026-11-03), with every engine ScummVM builds
-  by default. Its two test engines are only in the package the tests use. The 3D engines draw in software
-  (ScummVM's TinyGL) or with an OpenGL built into the core (Mesa's
-  softpipe), which the two engines that have only OpenGL (The Colony and
-  Thimbleweed Park) always use. No graphics card is used.
-- Tried: ScummVM's test engine (testbed), scummvm.org's freeware games
-  Beneath a Steel Sky, Flight of the Amazon Queen, Lure of the Temptress,
-  Drascula and DreamWeb, and King's Quest II. The sandboxed core and a
-  plain native build agree on every picture and the sound; savestates land
-  where the straight run does. Each was played for its first minute or so:
-  no game has been played through.
+  by default. In the tests the sandboxed core gives the same pictures and
+  sound as a plain native build, and savestates land where the straight
+  run does.
+- Tried: scummvm.org's freeware Beneath a Steel Sky, Flight of the Amazon
+  Queen, Lure of the Temptress, Drascula and DreamWeb, and King's Quest II,
+  each for its first minute or so; no game has been played through.
+- 3D games draw with ScummVM's TinyGL or with an OpenGL built into the core
+  (Mesa's softpipe), never on a graphics card. The Colony and Thimbleweed
+  Park always use the core's OpenGL.
 - Not tried: Windows; CD games with speech; games with video; any real 3D
   game (only ScummVM's 3D test engine was drawn). The Colony and
-  Thimbleweed Park are built in and have never been started: no copy of
-  either was available. See
-  [docs/PLAN.md](docs/PLAN.md) for what was measured and what was not tried.
+  Thimbleweed Park have never been started: no copy of either was
+  available. [docs/PLAN.md](docs/PLAN.md) has what was measured.
 
 ## What you bring
 

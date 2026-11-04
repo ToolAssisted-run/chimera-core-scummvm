@@ -12,8 +12,11 @@ name: chimera waterbox core
 # Chimera's own package checks. The MT-32 test needs the Roland MT-32's
 # ROMs, which no runner has: it says SKIP here.
 #
-# Not yet run: the repository has no remote (2026-11-03). Each ScummVM build
-# is about ten minutes on four cores, so the job is long.
+# The job is long. On a cold cache it builds Mesa twice (for the sandbox
+# and for the native reference; cached afterwards, keyed by setup-mesa.sh)
+# and ScummVM three times (the native reference, the sandbox with the test
+# engines, and the published sandbox without them), each about ten minutes
+# on four fast cores and longer on a runner.
 
 on:
   pull_request:
@@ -110,8 +113,8 @@ jobs:
       - name: Build Mesa
         run: |
           mb="$PWD/chimera-checkout/extern/chimera-common-minibox"
-          bash waterbox/setup-mesa.sh -m "$mb"
-          bash waterbox/setup-mesa.sh -n
+          bash waterbox/setup-mesa.sh -m "$mb" -j 4
+          bash waterbox/setup-mesa.sh -n -j 4
 
       - name: Fetch the freeware games
         run: ./tests/fetch-freeware.sh "$RUNNER_TEMP/freeware"

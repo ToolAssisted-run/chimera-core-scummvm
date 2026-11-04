@@ -408,8 +408,19 @@ fi
 
 # ---------------------------------------------------------------- texts
 echo "== texts"
+# Chimera's checker reads every source file under the folder it is given,
+# so it is given a copy of this repository's tracked files: in CI, Chimera's
+# own checkout lies inside this one (chimera-checkout), and its sources are
+# not the core's.
+tracked="$work/tracked"
+mkdir -p "$tracked"
+if git -C "$root" rev-parse --git-dir > /dev/null 2>&1; then
+	git -C "$root" ls-files -s | awk -F '\t' '$1 !~ /^160000/ { print $2 }' | (cd "$root" && xargs cp --parents -t "$tracked")
+else
+	tracked="$root"
+fi
 if [ -n "${CHIMERA_ROOT:-}" ] && [ -f "$CHIMERA_ROOT/tools/check-core-texts.py" ]; then
-	if python3 "$CHIMERA_ROOT/tools/check-core-texts.py" "$root" > "$work/texts.txt" 2>&1; then
+	if python3 "$CHIMERA_ROOT/tools/check-core-texts.py" "$tracked" > "$work/texts.txt" 2>&1; then
 		pass "texts:keys: every key the code names is in the English table, and every key is named ($(tail -1 "$work/texts.txt"))"
 	else
 		fail "texts:keys: $(head -5 "$work/texts.txt")"

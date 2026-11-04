@@ -31,8 +31,6 @@
 
     git clone --recursive https://github.com/ToolAssisted-run/chimera-core-scummvm
 
-(The repository is local only for now; the URL is where it would be.)
-
 - `extern/scummvm` is ScummVM at commit a60993f5 (2026-11-03). The build
   applies `patches/` to it in place; `waterbox/apply-patches.sh` leaves a
   tree that already has the whole series alone and refuses one that has
