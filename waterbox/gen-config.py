@@ -225,6 +225,7 @@ def main():
         "systemNames": {"ScummVM": "ScummVM"},
         "author": "The ScummVM Team; chimera core by Sergio Martin",
         "url": "https://github.com/scummvm/scummvm",
+        "runsOn": ["windows-x86_64", "linux-x86_64", "macos-x86_64"],
         "romFile": "game",
         "extensions": {".zip": "ScummVM"},
         "_comment_extensions": "A ScummVM game is a folder of files, given as a zip of the folder. ScummVM's own detector finds the game in it.",
