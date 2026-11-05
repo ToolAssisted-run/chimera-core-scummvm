@@ -57,6 +57,9 @@ fi
 mkdir -p "$root/build"
 make -C "$here" -f guest.mk MB="$mb" TEST_ENGINES="$tests" -j"${JOBS:-4}" > "$root/build/package-make-$variant.log" 2>&1 || {
 	tail -20 "$root/build/package-make-$variant.log" >&2; echo "the guest build failed (build/package-make-$variant.log)" >&2; exit 1; }
+# where the code reads its thread pointer, listed in the image: an Intel Mac
+# rewrites those reads as the core loads (miniBox's wbx-tp-rewrite.py)
+python3 "$mb/source/guest/wbx-tp-rewrite.py" "$guest/core.wbx"
 sh "$mb/source/guest/check-wbx.sh" "$guest/core.wbx"
 
 staging="$root/build/package-staging-$variant"
